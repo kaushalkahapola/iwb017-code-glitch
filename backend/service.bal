@@ -50,4 +50,40 @@ service / on new http:Listener(9090) {
         }
         return deleteUser(intId);
     }
+
+
+    // CRUD operations for tasks
+
+    resource function get tasks() returns Task[]|http:InternalServerError|error {
+        Task[] tasks = check getTasks();
+        return tasks;
+    }
+
+    resource function post tasks(CreateTaskRequest task) returns sql:ExecutionResult|sql:Error {
+        return createTask(task);
+    }
+
+    resource function get tasks/[string id]() returns Task|http:InternalServerError|error {
+        int|error intId = langint:fromString(id);
+        if intId is error {
+            return error("Invalid task id");
+        }
+        return getTaskById(intId);
+    }
+
+    resource function delete tasks/[string id]() returns sql:ExecutionResult|sql:Error {
+        int|error intId = langint:fromString(id);
+        if intId is error {
+            return error("Invalid task id");
+        }
+        return deleteTask(intId);
+    }
+
+    resource function put tasks/[string id](UpdateTaskRequest task) returns sql:ExecutionResult|sql:Error {
+        int|error intId = langint:fromString(id);
+        if intId is error {
+            return error("Invalid task id");
+        }
+        return updateTask(intId, task);
+    }
 };
