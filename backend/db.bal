@@ -1,5 +1,4 @@
 import ballerinax/mysql;
-import ballerina/sql;
 
 configurable string host = ?;
 configurable int port = ?;
@@ -16,9 +15,3 @@ mysql:Client dbClient = check new(
     database = database,
     options = connectionOptions
 );
-
-function getUsers() returns User[]|error {
-    sql:ParameterizedQuery query = `SELECT * FROM Users`;
-    stream<User,error?> UserStream = dbClient->query(query);
-    return from User user in UserStream select user;
-}
