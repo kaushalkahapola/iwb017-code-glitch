@@ -19,3 +19,18 @@ type User record {|
     decimal rating;
     time:Utc created_at;
 |};
+
+type CreateUserRequest record {|
+    string username;
+    string email;
+    string password_hash;
+    string location;
+    string bio;
+|};
+
+type UpdateUserRequest record {|
+    string username;
+    string email;
+    string location;
+    string bio;
+|};

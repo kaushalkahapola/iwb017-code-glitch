@@ -166,6 +166,9 @@ dependencies = [
 	{org = "ballerina", name = "lang.__internal"},
 	{org = "ballerina", name = "lang.object"}
 ]
+modules = [
+	{org = "ballerina", packageName = "lang.int", moduleName = "lang.int"}
+]
 
 [[package]]
 org = "ballerina"
@@ -347,6 +350,7 @@ version = "0.1.0"
 dependencies = [
 	{org = "ballerina", name = "http"},
 	{org = "ballerina", name = "io"},
+	{org = "ballerina", name = "lang.int"},
 	{org = "ballerina", name = "sql"},
 	{org = "ballerina", name = "test"},
 	{org = "ballerina", name = "time"},
