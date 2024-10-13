@@ -11,6 +11,7 @@ http:CorsConfig corsConfig = {
 
 service / on new http:Listener(9090) {
 
+    // CRUD operations for users
     resource function get greeting() returns string {
         // Send a response back to the caller.
         return "Hello from ballerina!";
