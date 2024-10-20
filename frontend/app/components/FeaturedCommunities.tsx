@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import Image from "next/image"
-import { Users, MapPin } from 'lucide-react'
+import { Users, MapPin, ArrowRight } from 'lucide-react'
 
 type Community = {
     community_id: number;
@@ -57,37 +56,34 @@ export default function FeaturedCommunities() {
   }
 
   return (
-    <section className="w-full py-12 md:py-24 lg:py-32 px-4 md:px-6">
-      <div className="container mx-auto px-4 md:px-6">
+    <section className="w-full py-12 md:py-24 lg:py-32 bg-gray-50">
+      <div className="container px-4 md:px-6 mx-auto">
         <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl mb-8 text-center">
           Featured Communities
         </h2>
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {communities.map((community) => (
-            <div key={community.community_id} className="bg-white rounded-lg shadow-md overflow-hidden">
-              <Image
-                src={`/placeholder.svg?height=200&width=400&text=${encodeURIComponent(community.name)}`}
-                alt={community.name}
-                width={400}
-                height={200}
-                className="object-cover w-full h-48"
-              />
+            <div key={community.community_id} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
               <div className="p-6">
-                <h3 className="text-xl font-semibold mb-2">{community.name}</h3>
-                <p className="text-gray-600 mb-4 line-clamp-2">{community.description}</p>
+                <div className="bg-green-100 text-green-800 text-xs font-semibold rounded-full px-3 py-1 inline-block mb-4">
+                  Featured
+                </div>
+                <h3 className="text-2xl font-bold mb-3 text-gray-800">{community.name}</h3>
+                <p className="text-gray-600 mb-4 line-clamp-3">{community.description}</p>
                 <div className="flex items-center text-sm text-gray-500 mb-2">
-                  <MapPin className="w-4 h-4 mr-1" />
+                  <MapPin className="w-4 h-4 mr-2 text-green-500" />
                   <span>{community.location}</span>
                 </div>
                 <div className="flex items-center text-sm text-gray-500 mb-4">
-                  <Users className="w-4 h-4 mr-1" />
+                  <Users className="w-4 h-4 mr-2 text-blue-500" />
                   <span>Created on {formatTimestamp(community.created_at)}</span>
                 </div>
                 <Link
                   href={`/communities/${community.community_id}`}
-                  className="inline-block px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors duration-300"
+                  className="inline-flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors duration-300"
                 >
                   Join Community
+                  <ArrowRight className="w-4 h-4 ml-2" />
                 </Link>
               </div>
             </div>
