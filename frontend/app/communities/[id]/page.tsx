@@ -1,144 +1,163 @@
 'use client'
 
-import { useState } from 'react'
-import Image from 'next/image'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Users, MapPin, Calendar, MessageSquare, Send, ArrowLeft } from 'lucide-react'
+import { Users, MapPin, Calendar, ArrowLeft, CheckCircle } from 'lucide-react'
 import Header from '../../components/Header'
 import Footer from '../../components/Footer'
 
-// This would typically come from your API or props
-const communityData = {
-  id: '1',
-  name: 'Green Thumbs',
-  description: 'A community for gardening enthusiasts to share tips, tricks, and experiences. Whether you\'re a seasoned gardener or just starting out, join us to grow together!',
-  image: '/placeholder.svg?height=300&width=800&text=Green+Thumbs',
-  location: 'San Francisco, CA',
-  members: 150,
-  foundedDate: '2022-03-15',
-  upcomingEvents: [
-    { id: '1', name: 'Spring Planting Workshop', date: '2023-04-20' },
-    { id: '2', name: 'Community Garden Clean-up', date: '2023-05-05' },
-  ],
-  recentDiscussions: [
-    { id: '1', title: 'Best plants for shade gardens?', author: 'Alice Johnson', date: '2023-06-10', replies: 12 },
-    { id: '2', title: 'Organic pest control methods', author: 'Bob Smith', date: '2023-06-08', replies: 8 },
-  ]
+type Community = {
+    community_id: number;
+    name: string;
+    description: string;
+    location: string;
+    created_by: number;
+    created_at: [number, number]; // [seconds, nanoseconds]
+}
+
+type User = {
+    user_id: number;
+    username: string;
+    email: string;
+    location: string;
+    bio: string;
+    rating: number;
+    created_at: [number, number];
+}
+
+type Task = {
+    task_id: number;
+    title: string;
+    description: string;
+    posted_by: number;
+    offered_task: string;
+    status: string;
+    community_id: number | null;
+    created_at: [number, number];
+}
+
+function formatTimestamp(timestamp: [number, number]): string {
+    const [seconds, _] = timestamp;
+    const date = new Date(seconds * 1000); // Convert seconds to milliseconds
+    return date.toLocaleDateString();
 }
 
 export default function CommunityDetail({ params }: { params: { id: string } }) {
+  const [community, setCommunity] = useState<Community | null>(null)
+  const [members, setMembers] = useState<User[]>([])
+  const [tasks, setTasks] = useState<Task[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [isJoined, setIsJoined] = useState(false)
-  const [newPost, setNewPost] = useState('')
 
-  const handleJoinCommunity = () => {
+  useEffect(() => {
+    const fetchCommunityData = async () => {
+      try {
+        // Fetch community details
+        const communityResponse = await fetch(`http://localhost:9090/communities/${params.id}`)
+        if (!communityResponse.ok) {
+          throw new Error('Failed to fetch community details')
+        }
+        const communityData: Community = await communityResponse.json()
+        setCommunity(communityData)
+
+        // Fetch community members
+        const membersResponse = await fetch(`http://localhost:9090/communityMembers/${params.id}`)
+        if (membersResponse.ok) {
+          const membersData: User[] = await membersResponse.json()
+          setMembers(membersData)
+        }
+
+        // Fetch community tasks
+        const tasksResponse = await fetch(`http://localhost:9090/tasks/community/${params.id}`)
+        if (tasksResponse.ok) {
+          const tasksData: Task[] = await tasksResponse.json()
+          setTasks(tasksData)
+        }
+      } catch (err) {
+        setError('Failed to load community data. Please try again later.')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchCommunityData()
+  }, [params.id])
+
+  const handleJoin = () => {
+    // Here you would typically send a request to your API to join the community
     setIsJoined(!isJoined)
-    // Here you would typically send a request to your API to join/leave the community
   }
 
-  const handlePostSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    // Here you would typically send the post to your API
-    console.log('Submitting post:', newPost)
-    setNewPost('')
+  if (isLoading) {
+    return <div className="flex items-center justify-center min-h-screen">
+      <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-green-500"></div>
+    </div>
+  }
+
+  if (error || !community) {
+    return <div className="flex items-center justify-center min-h-screen text-red-600">{error || 'Community not found'}</div>
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
+    <div className="flex flex-col min-h-screen">
       <Header />
-      <main className="flex-grow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <Link href="/communities" className="inline-flex items-center text-green-600 hover:text-green-800 mb-6">
+      <main className="flex-grow bg-gray-50">
+        <div className="container mx-auto px-4 py-8">
+          <Link href="/communities" className="inline-flex items-center text-green-600 hover:text-green-800 mb-6 transition duration-300">
             <ArrowLeft className="w-5 h-5 mr-2" />
             Back to Communities
           </Link>
 
-          <div className="bg-white rounded-lg shadow-md overflow-hidden">
-            <Image
-              src={communityData.image}
-              alt={communityData.name}
-              width={800}
-              height={300}
-              className="w-full h-64 object-cover"
-            />
-            <div className="p-6">
-              <div className="flex justify-between items-start mb-4">
-                <h1 className="text-3xl font-bold text-gray-900">{communityData.name}</h1>
+          <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+            <div className="p-6 sm:p-10">
+              <div className="flex justify-between items-start mb-6">
+                <h1 className="text-4xl font-bold text-gray-900">{community.name}</h1>
                 <button
-                  onClick={handleJoinCommunity}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors duration-300 ${
+                  onClick={handleJoin}
+                  className={`px-6 py-2 rounded-full text-white font-semibold transition duration-300 ${
                     isJoined
-                      ? 'bg-gray-200 text-gray-800 hover:bg-gray-300'
-                      : 'bg-green-600 text-white hover:bg-green-700'
+                      ? 'bg-green-500 hover:bg-green-600'
+                      : 'bg-green-400 hover:bg-green-500'
                   }`}
                 >
-                  {isJoined ? 'Leave Community' : 'Join Community'}
+                  {isJoined ? 'Joined' : 'Join Community'}
                 </button>
               </div>
-              <p className="text-gray-600 mb-4">{communityData.description}</p>
-              <div className="flex flex-wrap gap-4 text-sm text-gray-600 mb-6">
-                <div className="flex items-center">
-                  <MapPin className="w-5 h-5 mr-2" />
-                  {communityData.location}
+              <p className="text-xl text-gray-600 mb-8">{community.description}</p>
+              <div className="flex flex-wrap gap-6 text-sm text-gray-600 mb-10">
+                <div className="flex items-center bg-gray-100 rounded-full px-4 py-2">
+                  <MapPin className="w-5 h-5 mr-2 text-green-500" />
+                  {community.location}
                 </div>
-                <div className="flex items-center">
-                  <Users className="w-5 h-5 mr-2" />
-                  {communityData.members} members
+                <div className="flex items-center bg-gray-100 rounded-full px-4 py-2">
+                  <Users className="w-5 h-5 mr-2 text-blue-500" />
+                  {members.length} members
                 </div>
-                <div className="flex items-center">
-                  <Calendar className="w-5 h-5 mr-2" />
-                  Founded {new Date(communityData.foundedDate).toLocaleDateString()}
-                </div>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <h2 className="text-xl font-semibold mb-4 text-gray-800">Upcoming Events</h2>
-                  <ul className="space-y-4">
-                    {communityData.upcomingEvents.map((event) => (
-                      <li key={event.id} className="bg-gray-50 p-4 rounded-md">
-                        <h3 className="font-medium text-gray-800">{event.name}</h3>
-                        <p className="text-sm text-gray-600">{new Date(event.date).toLocaleDateString()}</p>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div>
-                  <h2 className="text-xl font-semibold mb-4 text-gray-800">Recent Discussions</h2>
-                  <ul className="space-y-4">
-                    {communityData.recentDiscussions.map((discussion) => (
-                      <li key={discussion.id} className="bg-gray-50 p-4 rounded-md">
-                        <h3 className="font-medium text-gray-800">{discussion.title}</h3>
-                        <p className="text-sm text-gray-600">
-                          By {discussion.author} on {new Date(discussion.date).toLocaleDateString()}
-                        </p>
-                        <div className="flex items-center mt-2 text-sm text-gray-500">
-                          <MessageSquare className="w-4 h-4 mr-1" />
-                          {discussion.replies} replies
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
+                <div className="flex items-center bg-gray-100 rounded-full px-4 py-2">
+                  <Calendar className="w-5 h-5 mr-2 text-purple-500" />
+                  Founded {formatTimestamp(community.created_at)}
                 </div>
               </div>
 
-              <div className="mt-8">
-                <h2 className="text-xl font-semibold mb-4 text-gray-800">Start a New Discussion</h2>
-                <form onSubmit={handlePostSubmit} className="space-y-4">
-                  <textarea
-                    value={newPost}
-                    onChange={(e) => setNewPost(e.target.value)}
-                    placeholder="What's on your mind?"
-                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
-                    rows={4}
-                  ></textarea>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors duration-300 flex items-center"
-                  >
-                    <Send className="w-5 h-5 mr-2" />
-                    Post Discussion
-                  </button>
-                </form>
+              <h2 className="text-2xl font-semibold mb-6 text-gray-800">Community Tasks</h2>
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {tasks.map((task) => (
+                  <div key={task.task_id} className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition duration-300">
+                    <h3 className="font-semibold text-lg text-gray-800 mb-2">{task.title}</h3>
+                    <p className="text-gray-600 mb-4">{task.description}</p>
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-blue-500">Offered: {task.offered_task}</span>
+                      <span className={`px-3 py-1 rounded-full ${
+                        task.status === 'Open' ? 'bg-green-100 text-green-800' :
+                        task.status === 'In Progress' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {task.status}
+                      </span>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -148,4 +167,3 @@ export default function CommunityDetail({ params }: { params: { id: string } }) 
     </div>
   )
 }
-
