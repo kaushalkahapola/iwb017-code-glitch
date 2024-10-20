@@ -29,12 +29,44 @@ type CommunityOption = { value: number; label: string | undefined };
 export default function CreateEditTask() {
   const router = useRouter();
 
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUserId = async () => {
+      const token = localStorage.getItem("token"); // Assuming you store the token in localStorage after login
+      if (!token) {
+        console.error("No token found");
+        return;
+      }
+
+      try {
+        const response = await fetch("/api/user", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log(data);
+          setUserId(data.id);
+        } else {
+          console.error("Failed to fetch user ID");
+        }
+      } catch (error) {
+        console.error("Error fetching user ID:", error);
+      }
+    };
+
+    fetchUserId();
+  }, []);
+
   const [task, setTask] = useState({
     title: "",
     description: "",
     offered_task: "",
     community_id: null as number | null,
-    posted_by: 1, // Added posted_by with a default user ID of 1
+    posted_by: userId, // Added posted_by with a default user ID of 1
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
