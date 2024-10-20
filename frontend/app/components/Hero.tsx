@@ -22,7 +22,7 @@ export default function Hero() {
   }, []);
 
   return (
-    <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48 bg-green-100">
+    <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48 bg-green-100 px-4 md:px-6">
       <div className="container px-4 md:px-6">
         <div className="flex flex-col items-center space-y-4 text-center">
           <div className="space-y-2">
