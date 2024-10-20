@@ -9,7 +9,7 @@ interface Notification {
   id: number;
   user_id: number;
   message: string;
-  read_status: 0 | 1;
+  read_status: boolean;
   created_at: [number, number];
 }
 
@@ -47,12 +47,15 @@ export default function Notifications({ params }: { params: { id: string } }) {
             "Content-Type": "application/json",
             Origin: "http://localhost:3000",
           },
+          body: JSON.stringify({ read_status: true }),
         }
       );
       if (response.ok) {
         setNotifications(
           notifications.map((notif) =>
-            notif.id === notificationId ? { ...notif, read_status: 1 } : notif
+            notif.id === notificationId
+              ? { ...notif, read_status: true }
+              : notif
           )
         );
       } else {
@@ -129,7 +132,7 @@ export default function Notifications({ params }: { params: { id: string } }) {
                 </p>
               </div>
               <div className="ml-auto pl-3">
-                {notification.read_status === 0 ? (
+                {!notification.read_status ? (
                   <button
                     onClick={() => markAsRead(notification.id)}
                     className="text-sm text-green-600 hover:text-green-800 transition-colors duration-300 flex items-center"
