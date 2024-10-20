@@ -6,6 +6,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import Select from "react-select";
 import "../styles/react-select-styles.css";
+import Link from "next/link";
 
 // Define interfaces
 interface Task {
@@ -277,9 +278,11 @@ export default function TaskFeed() {
         </div>
 
         {/* Floating button for creating a new task */}
-        <button className="fixed bottom-8 right-8 bg-green-600 text-white rounded-full p-4 shadow-lg hover:bg-green-700 transition-all duration-300 hover:shadow-xl transform hover:-translate-y-1">
-          <Plus className="w-6 h-6" />
-        </button>
+        <Link href="/tasks/create" passHref>
+          <button className="fixed bottom-8 right-8 bg-green-600 text-white rounded-full p-4 shadow-lg hover:bg-green-700 transition-all duration-300 hover:shadow-xl transform hover:-translate-y-1">
+            <Plus className="w-6 h-6" />
+          </button>
+        </Link>
       </main>
       <Footer />
     </div>
