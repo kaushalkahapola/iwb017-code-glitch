@@ -1,7 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Users, MapPin, ArrowUpRight, Plus } from "lucide-react";
+import Link from "next/link";
+import Image from "next/image";
+import { Users, MapPin, ArrowUpRight, Plus, Search } from "lucide-react";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
 
 // Sample data for communities
 const communitiesData = [
@@ -12,6 +16,7 @@ const communitiesData = [
     description: "A community for gardening enthusiasts",
     members: 150,
     activity: 85,
+    image: "/placeholder.svg?height=200&width=400&text=Green+Thumbs"
   },
   {
     id: 2,
@@ -20,6 +25,7 @@ const communitiesData = [
     description: "Share and learn about the latest in technology",
     members: 300,
     activity: 95,
+    image: "/placeholder.svg?height=200&width=400&text=Tech+Wizards"
   },
   {
     id: 3,
@@ -28,6 +34,7 @@ const communitiesData = [
     description: "Get fit and stay healthy together",
     members: 200,
     activity: 90,
+    image: "/placeholder.svg?height=200&width=400&text=Fitness+Fanatics"
   },
   {
     id: 4,
@@ -36,6 +43,7 @@ const communitiesData = [
     description: "Explore the art of cooking and baking",
     members: 175,
     activity: 80,
+    image: "/placeholder.svg?height=200&width=400&text=Culinary+Artists"
   },
   {
     id: 5,
@@ -44,6 +52,7 @@ const communitiesData = [
     description: "Discuss and share your favorite reads",
     members: 225,
     activity: 75,
+    image: "/placeholder.svg?height=200&width=400&text=Book+Lovers"
   },
   {
     id: 6,
@@ -52,12 +61,14 @@ const communitiesData = [
     description: "Create, upcycle, and craft together",
     members: 125,
     activity: 70,
+    image: "/placeholder.svg?height=200&width=400&text=DIY+Crafters"
   },
 ];
 
 export default function CommunitiesPage() {
   const [communities, setCommunities] = useState(communitiesData);
   const [sortBy, setSortBy] = useState("popularity");
+  const [searchTerm, setSearchTerm] = useState("");
 
   const handleSort = (method: string) => {
     setSortBy(method);
@@ -76,73 +87,102 @@ export default function CommunitiesPage() {
     setCommunities(sortedCommunities);
   };
 
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+  };
+
+  const filteredCommunities = communities.filter(community =>
+    community.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    community.description.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-6 text-gray-800">Communities</h1>
+      <Header />
+      <main className="flex-grow">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <h1 className="text-3xl font-bold mb-6 text-gray-800">Communities</h1>
 
-        {/* Sort section */}
-        <div className="bg-white p-4 rounded-lg shadow mb-6 border border-gray-200 flex justify-end">
-          <label
-            htmlFor="sort"
-            className="mr-2 text-sm font-medium text-gray-700 self-center"
-          >
-            Sort by:
-          </label>
-          <select
-            id="sort"
-            value={sortBy}
-            onChange={(e) => handleSort(e.target.value)}
-            className="block w-40 p-2 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
-          >
-            <option value="popularity">Popularity</option>
-            <option value="activity">Activity</option>
-            <option value="location">Location</option>
-          </select>
-        </div>
-
-        {/* Community grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {communities.map((community) => (
-            <div
-              key={community.id}
-              className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 border border-gray-200"
-            >
-              <div className="p-6">
-                <h2 className="text-xl font-semibold mb-2 text-gray-800">
-                  {community.name}
-                </h2>
-                <p className="text-gray-600 mb-4">{community.description}</p>
-                <div className="flex items-center text-sm text-gray-600 mb-4">
-                  <MapPin className="w-4 h-4 mr-1" />
-                  <span>{community.location}</span>
-                </div>
-                <div className="flex items-center text-sm text-gray-600 mb-4">
-                  <Users className="w-4 h-4 mr-1" />
-                  <span>{community.members} members</span>
-                </div>
-              </div>
-              <div className="bg-gray-50 px-6 py-4">
-                <div className="flex justify-between">
-                  <button className="text-green-600 hover:text-green-800 font-medium flex items-center transition-colors duration-300">
-                    View Details
-                    <ArrowUpRight className="w-4 h-4 ml-1" />
-                  </button>
-                  <button className="text-white bg-green-600 hover:bg-green-700 px-4 py-2 rounded-md transition-colors duration-300">
-                    Join Community
-                  </button>
-                </div>
-              </div>
+          {/* Search and Sort section */}
+          <div className="bg-white p-4 rounded-lg shadow mb-6 border border-gray-200 flex flex-col sm:flex-row justify-between items-center">
+            <div className="relative w-full sm:w-64 mb-4 sm:mb-0">
+              <input
+                type="text"
+                placeholder="Search communities..."
+                value={searchTerm}
+                onChange={handleSearch}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
+              />
+              <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
             </div>
-          ))}
-        </div>
+            <div className="flex items-center">
+              <label htmlFor="sort" className="mr-2 text-sm font-medium text-gray-700">
+                Sort by:
+              </label>
+              <select
+                id="sort"
+                value={sortBy}
+                onChange={(e) => handleSort(e.target.value)}
+                className="block w-40 p-2 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
+              >
+                <option value="popularity">Popularity</option>
+                <option value="activity">Activity</option>
+                <option value="location">Location</option>
+              </select>
+            </div>
+          </div>
 
-        {/* Create new community button */}
-        <button className="fixed bottom-8 right-8 bg-green-600 text-white rounded-full p-4 shadow-lg hover:bg-green-700 transition-all duration-300 hover:shadow-xl transform hover:-translate-y-1 flex items-center">
-          <Plus className="w-6 h-6 mr-2" />
-          Create New Community
-        </button>
-      </div>
+          {/* Community grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredCommunities.map((community) => (
+              <div
+                key={community.id}
+                className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 border border-gray-200"
+              >
+                <Image
+                  src={community.image}
+                  alt={community.name}
+                  width={400}
+                  height={200}
+                  className="w-full h-48 object-cover"
+                />
+                <div className="p-6">
+                  <h2 className="text-xl font-semibold mb-2 text-gray-800">
+                    {community.name}
+                  </h2>
+                  <p className="text-gray-600 mb-4">{community.description}</p>
+                  <div className="flex items-center text-sm text-gray-600 mb-4">
+                    <MapPin className="w-4 h-4 mr-1" />
+                    <span>{community.location}</span>
+                  </div>
+                  <div className="flex items-center text-sm text-gray-600 mb-4">
+                    <Users className="w-4 h-4 mr-1" />
+                    <span>{community.members} members</span>
+                  </div>
+                </div>
+                <div className="bg-gray-50 px-6 py-4">
+                  <div className="flex justify-between">
+                    <Link href={`/communities/${community.id}`} className="text-green-600 hover:text-green-800 font-medium flex items-center transition-colors duration-300">
+                      View Details
+                      <ArrowUpRight className="w-4 h-4 ml-1" />
+                    </Link>
+                    <button className="text-white bg-green-600 hover:bg-green-700 px-4 py-2 rounded-md transition-colors duration-300">
+                      Join Community
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Create new community button */}
+          <Link href="/communities/create" className="fixed bottom-8 right-8 bg-green-600 text-white rounded-full p-4 shadow-lg hover:bg-green-700 transition-all duration-300 hover:shadow-xl transform hover:-translate-y-1 flex items-center">
+            <Plus className="w-6 h-6 mr-2" />
+            Create New Community
+          </Link>
+        </div>
+      </main>
+      <Footer />
     </div>
   );
 }
