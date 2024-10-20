@@ -47,3 +47,15 @@ function updateTask(int task_id, UpdateTaskRequest task) returns sql:ExecutionRe
         return dbClient->execute(query);
     }
 }
+
+function getTasksByCommunity(int community_id) returns Task[]|error {
+    sql:ParameterizedQuery query = `SELECT * FROM Tasks WHERE community_id = ${community_id}`;
+    stream<Task,error?> TaskStream = dbClient->query(query);
+    return from Task task in TaskStream select task;
+}
+
+function getTasksByUser(int user_id) returns Task[]|error {
+    sql:ParameterizedQuery query = `SELECT * FROM Tasks WHERE posted_by = ${user_id}`;
+    stream<Task,error?> TaskStream = dbClient->query(query);
+    return from Task task in TaskStream select task;
+}
