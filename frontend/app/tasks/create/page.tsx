@@ -16,7 +16,7 @@ import Select, { SingleValue } from "react-select";
 type FormErrors = {
   title?: string;
   description?: string;
-  offeredTask?: string;
+  offered_task?: string;
 };
 
 type Community = {
@@ -32,9 +32,9 @@ export default function CreateEditTask() {
   const [task, setTask] = useState({
     title: "",
     description: "",
-    offeredTask: "",
+    offered_task: "",
     community_id: null as number | null,
-    status: "Open",
+    posted_by: 1, // Added posted_by with a default user ID of 1
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -42,6 +42,7 @@ export default function CreateEditTask() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isCreated, setIsCreated] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   useEffect(() => {
     fetchCommunities();
@@ -88,8 +89,8 @@ export default function CreateEditTask() {
     if (!task.title.trim()) newErrors.title = "Title is required";
     if (!task.description.trim())
       newErrors.description = "Description is required";
-    if (!task.offeredTask.trim())
-      newErrors.offeredTask = "Offered task is required";
+    if (!task.offered_task.trim())
+      newErrors.offered_task = "Offered task is required";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -99,14 +100,20 @@ export default function CreateEditTask() {
     if (validateForm()) {
       setIsLoading(true);
       setError(null);
-      setIsCreated(false);
+      setSuccessMessage(null);
       try {
+        const taskToSend = {
+          ...task,
+          community_id: task.community_id ? task.community_id.toString() : null,
+        };
+
         const response = await fetch("http://localhost:9090/tasks", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Origin: "http://localhost:3000",
           },
-          body: JSON.stringify(task),
+          body: JSON.stringify(taskToSend),
         });
 
         const data = await response.json();
@@ -115,12 +122,8 @@ export default function CreateEditTask() {
           throw new Error(data.message || "Failed to create task");
         }
 
-        if (!data.id) {
-          throw new Error("Task creation failed: No task ID returned");
-        }
-
-        setIsCreated(true);
-        setTimeout(() => router.push("/tasks"), 2000); // Redirect after 2 seconds
+        setSuccessMessage("Task created successfully!");
+        setTimeout(() => router.back(), 2000); // Redirect after 2 seconds
       } catch (error) {
         console.error("Error creating task:", error);
         setError(
@@ -162,12 +165,10 @@ export default function CreateEditTask() {
                 <span className="font-medium">Error: {error}</span>
               </div>
             )}
-            {isCreated && (
+            {successMessage && (
               <div className="mb-6 p-4 bg-green-100 border-l-4 border-green-500 text-green-700 rounded-md flex items-center">
                 <CheckCircle className="h-5 w-5 mr-2 flex-shrink-0" />
-                <span className="font-medium">
-                  Task created successfully! Redirecting...
-                </span>
+                <span className="font-medium">{successMessage}</span>
               </div>
             )}
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -221,25 +222,25 @@ export default function CreateEditTask() {
 
               <div>
                 <label
-                  htmlFor="offeredTask"
+                  htmlFor="offered_task"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
                   Offered Task
                 </label>
                 <input
                   type="text"
-                  id="offeredTask"
-                  name="offeredTask"
-                  value={task.offeredTask}
+                  id="offered_task"
+                  name="offered_task"
+                  value={task.offered_task}
                   onChange={handleChange}
                   className={`w-full px-3 py-2 border rounded-md ${
-                    errors.offeredTask ? "border-red-500" : "border-gray-300"
+                    errors.offered_task ? "border-red-500" : "border-gray-300"
                   } focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors`}
                   placeholder="What task or service will you offer in return?"
                 />
-                {errors.offeredTask && (
+                {errors.offered_task && (
                   <p className="mt-1 text-sm text-red-500">
-                    {errors.offeredTask}
+                    {errors.offered_task}
                   </p>
                 )}
               </div>

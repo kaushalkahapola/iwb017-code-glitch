@@ -7,10 +7,10 @@ import ballerina/lang.'int as langint;
 // The service-level CORS config applies globally to each `resource`.
 @http:ServiceConfig {
     cors: {
-        allowOrigins: ["*"],
+        allowOrigins: ["http://localhost:3000"],
         allowCredentials: false,
-        allowHeaders: ["*"],
-        allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
+        allowHeaders: ["Content-Type", "Authorization"],
+        allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
     }
 }
 
