@@ -32,6 +32,7 @@ type Task = {
   offered_task: string;
   status: string;
   community_id: number | null;
+  posted_by: number;
 };
 
 export default function EditTask({ params }: { params: { id: string } }) {
@@ -170,7 +171,7 @@ export default function EditTask({ params }: { params: { id: string } }) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex justify-between items-center">
             <Link
-              href="/users/123/profile"
+              href={`/users/${task.posted_by}/profile`}
               className="flex items-center text-green-600 hover:text-green-800 transition-colors"
             >
               <ArrowLeft className="h-5 w-5 mr-2" />

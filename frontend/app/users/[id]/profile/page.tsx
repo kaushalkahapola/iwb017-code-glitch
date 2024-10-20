@@ -139,7 +139,25 @@ export default function UserProfile({ params }: { params: { id: string } }) {
   };
 
   const handleDeleteTask = async (taskId: number) => {
-    // Implement the logic to delete a task
+    try {
+      const response = await fetch(`http://localhost:9090/tasks/${taskId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        // Remove the deleted task from the state
+        setTasks(tasks.filter((task) => task.task_id !== taskId));
+      } else {
+        throw new Error("Failed to delete task");
+      }
+    } catch (error) {
+      console.error("Error deleting task:", error);
+      // Optionally, set an error state to display to the user
+      // setError('Failed to delete task. Please try again.');
+    }
   };
 
   if (isLoading) {
