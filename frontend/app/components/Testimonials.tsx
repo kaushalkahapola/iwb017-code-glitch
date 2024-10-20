@@ -4,14 +4,14 @@ export default function Testimonials() {
   return (
     <section className="w-full py-12 md:py-24 lg:py-32 bg-green-50">
       <div className="container px-4 md:px-6">
-        <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl mb-8 text-center text-green-800">Testimonials</h2>
+        <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl mb-8 text-center text-green-800 animate-[float_6s_ease-in-out_infinite]">Testimonials</h2>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {[
             { name: "Alice Johnson", review: "TaskSwap has transformed how I interact with my neighbors. It's not just about tasks; it's about building real connections." },
             { name: "Bob Smith", review: "I've saved so much money and learned new skills thanks to TaskSwap. It's a game-changer for our community!" },
             { name: "Carol Davis", review: "The platform is user-friendly and the community is so supportive. I've met amazing people while getting things done." },
           ].map((testimonial, index) => (
-            <div key={index} className="rounded-lg border border-green-200 bg-white text-green-800 shadow-sm">
+            <div key={index} className="rounded-lg border border-green-200 bg-white text-green-800 shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
               <div className="p-6 space-y-4">
                 <div className="flex items-center space-x-4">
                   <Image

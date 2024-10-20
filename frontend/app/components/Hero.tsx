@@ -1,15 +1,37 @@
-import Link from "next/link"
+'use client';
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import "./Hero.css";
 
 export default function Hero() {
+  const [text, setText] = useState("");
+  const fullText = "Swap Tasks, Build Communities";
+
+  // Typing effect logic
+  useEffect(() => {
+    let index = 0;
+    const interval = setInterval(() => {
+      setText(fullText.slice(0, index));
+      index += 1;
+      if (index > fullText.length) {
+        clearInterval(interval); // Stops once the text is fully typed
+      }
+    }, 100); // Adjust typing speed here (milliseconds per character)
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48 bg-green-100">
       <div className="container px-4 md:px-6">
         <div className="flex flex-col items-center space-y-4 text-center">
           <div className="space-y-2">
+            {/* Text with typing animation */}
             <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl/none text-green-800">
-              Swap Tasks, Build Communities
+              <span className="typing-text">{text}</span>
+              <span className="blinking-cursor">|</span>
             </h1>
-            <p className="mx-auto max-w-[700px] text-green-700 md:text-xl">
+            <p className="mx-auto max-w-[700px] text-green-700 md:text-xl animate-[pulse_4s_ease-in-out_infinite]">
               Join our local task exchange platform and connect with neighbors to share skills, save money, and
               strengthen your community.
             </p>
@@ -17,13 +39,13 @@ export default function Hero() {
           <div className="space-x-4">
             <Link
               href="/get-started"
-              className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-green-700 disabled:pointer-events-none disabled:opacity-50 bg-green-600 text-white shadow hover:bg-green-700 h-9 px-4 py-2"
+              className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-all duration-300 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-green-700 disabled:pointer-events-none disabled:opacity-50 bg-green-600 text-white shadow hover:bg-green-700 hover:shadow-lg h-9 px-4 py-2 transform hover:-translate-y-0.5"
             >
               Get Started
             </Link>
             <Link
               href="/learn-more"
-              className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-green-700 disabled:pointer-events-none disabled:opacity-50 border border-green-600 bg-white text-green-600 shadow-sm hover:bg-green-50 h-9 px-4 py-2"
+              className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-all duration-300 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-green-700 disabled:pointer-events-none disabled:opacity-50 border border-green-600 bg-white text-green-600 shadow-sm hover:bg-green-50 hover:shadow h-9 px-4 py-2 transform hover:-translate-y-0.5"
             >
               Learn More
             </Link>
@@ -31,5 +53,5 @@ export default function Hero() {
         </div>
       </div>
     </section>
-  )
+  );
 }

@@ -5,7 +5,7 @@ export default function FeaturedCommunities() {
   return (
     <section className="w-full py-12 md:py-24 lg:py-32 bg-green-100">
       <div className="container px-4 md:px-6">
-        <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl mb-8 text-center text-green-800">
+        <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl mb-8 text-center text-green-800 animate-[float_6s_ease-in-out_infinite]">
           Featured Communities
         </h2>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
