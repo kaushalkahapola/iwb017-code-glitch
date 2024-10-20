@@ -2,7 +2,10 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { MapPin, Filter, Plus } from 'lucide-react'
+import Header from '../components/Header'
+import Footer from '../components/Footer'
 
 // Placeholder data for tasks
 const tasks = [
@@ -70,12 +73,13 @@ export default function TaskFeed() {
   )
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4">
-      <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6">Task Feed</h1>
+    <div className="flex flex-col min-h-screen bg-gray-50">
+      <Header />
+      <main className="flex-grow container mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold mb-6 text-gray-800">Task Feed</h1>
         
         {/* Filter section */}
-        <div className="bg-white p-4 rounded-lg shadow mb-6">
+        <div className="bg-white p-4 rounded-lg shadow mb-6 border border-gray-200">
           <div className="flex flex-wrap gap-4">
             {Object.entries(filterOptions).map(([filterType, options]) => (
               <div key={filterType} className="flex-1 min-w-[200px]">
@@ -86,7 +90,7 @@ export default function TaskFeed() {
                   id={filterType}
                   value={filters[filterType.slice(0, -1) as keyof typeof filters]}
                   onChange={(e) => handleFilterChange(filterType.slice(0, -1), e.target.value)}
-                  className="block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  className="block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
                 >
                   {options.map(option => (
                     <option key={option} value={option}>{option}</option>
@@ -100,9 +104,9 @@ export default function TaskFeed() {
         {/* Task cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredTasks.map(task => (
-            <div key={task.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
+            <div key={task.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 border border-gray-200">
               <div className="p-6">
-                <h2 className="text-xl font-semibold mb-2">{task.title}</h2>
+                <h2 className="text-xl font-semibold mb-2 text-gray-800">{task.title}</h2>
                 <p className="text-gray-600 mb-4">{task.description}</p>
                 <div className="flex items-center mb-4">
                   <Image
@@ -115,7 +119,7 @@ export default function TaskFeed() {
                   <span className="text-sm text-gray-700">{task.user.name}</span>
                 </div>
                 <div className="flex justify-between items-center mb-4">
-                  <span className="text-sm text-gray-500">Offered: {task.offeredTask}</span>
+                  <span className="text-sm text-gray-600">Offered: {task.offeredTask}</span>
                   <span className={`px-2 py-1 rounded-full text-xs ${
                     task.status === 'Open' ? 'bg-green-100 text-green-800' :
                     task.status === 'Accepted' ? 'bg-yellow-100 text-yellow-800' :
@@ -124,17 +128,17 @@ export default function TaskFeed() {
                     {task.status}
                   </span>
                 </div>
-                <div className="flex items-center text-sm text-gray-500">
+                <div className="flex items-center text-sm text-gray-600">
                   <MapPin className="w-4 h-4 mr-1" />
                   {task.location}
                 </div>
               </div>
               <div className="bg-gray-50 px-6 py-4">
                 <div className="flex justify-between">
-                  <button className="text-blue-600 hover:text-blue-800 font-medium">
+                  <button className="text-green-600 hover:text-green-800 font-medium transition-colors duration-300">
                     View Details
                   </button>
-                  <button className="text-green-600 hover:text-green-800 font-medium">
+                  <button className="text-green-600 hover:text-green-800 font-medium transition-colors duration-300">
                     Offer Swap
                   </button>
                 </div>
@@ -144,10 +148,11 @@ export default function TaskFeed() {
         </div>
 
         {/* Floating button for creating a new task */}
-        <button className="fixed bottom-8 right-8 bg-blue-600 text-white rounded-full p-4 shadow-lg hover:bg-blue-700 transition-colors duration-300">
+        <button className="fixed bottom-8 right-8 bg-green-600 text-white rounded-full p-4 shadow-lg hover:bg-green-700 transition-all duration-300 hover:shadow-xl transform hover:-translate-y-1">
           <Plus className="w-6 h-6" />
         </button>
-      </div>
+      </main>
+      <Footer />
     </div>
   )
 }
