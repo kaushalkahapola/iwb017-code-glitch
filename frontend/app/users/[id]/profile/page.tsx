@@ -245,10 +245,12 @@ export default function UserProfile({ params }: { params: { id: string } }) {
         <section>
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-2xl font-bold text-gray-800">My Tasks</h2>
+            <Link href='/tasks/create'>
             <button className="flex items-center text-green-500 hover:text-green-600 transition-colors duration-300">
               <Plus className="w-5 h-5 mr-1" />
               Add Task
             </button>
+            </Link>
           </div>
           <div className="space-y-4">
             {tasks.map((task) => (
