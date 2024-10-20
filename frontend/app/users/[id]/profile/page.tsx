@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -12,8 +12,10 @@ import {
   ArrowLeft,
   LogOut,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function UserProfile({ params }: { params: { id: string } }) {
+  const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [user, setUser] = useState({
     id: "123",
@@ -25,7 +27,7 @@ export default function UserProfile({ params }: { params: { id: string } }) {
     averageRating: 4.8,
   });
 
-  const tasks = [
+  const [tasks, setTasks] = useState([
     {
       id: 1,
       title: "Gardening Help",
@@ -50,7 +52,7 @@ export default function UserProfile({ params }: { params: { id: string } }) {
       postedDate: "2023-06-05",
       offeredTask: "Guitar lessons",
     },
-  ];
+  ]);
 
   const communities = [
     {
@@ -103,6 +105,33 @@ export default function UserProfile({ params }: { params: { id: string } }) {
     // Here you would typically handle the logic to leave a community
     console.log(`Leaving community with id: ${communityId}`);
   };
+
+  const handleEditTask = (taskId: number) => {
+    router.push(`/tasks/${taskId}/edit`);
+  };
+
+  const handleDeleteTask = useCallback(async (taskId: number) => {
+    if (window.confirm("Are you sure you want to delete this task?")) {
+      try {
+        const response = await fetch(`http://localhost:9090/tasks/${taskId}`, {
+          method: "DELETE",
+          headers: {
+            Origin: "http://localhost:3000",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to delete task");
+        }
+
+        // Remove the deleted task from the state
+        setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
+      } catch (error) {
+        console.error("Error deleting task:", error);
+        alert("Failed to delete task. Please try again.");
+      }
+    }
+  }, []);
 
   return (
     <div className="h-full overflow-y-auto bg-gray-50 px-4 py-8">
@@ -227,10 +256,16 @@ export default function UserProfile({ params }: { params: { id: string } }) {
                     </div>
                   </div>
                   <div className="flex space-x-2">
-                    <button className="p-2 text-green-500 hover:bg-green-100 rounded transition-colors duration-300">
+                    <button
+                      onClick={() => handleEditTask(task.id)}
+                      className="p-2 text-green-500 hover:bg-green-100 rounded transition-colors duration-300"
+                    >
                       <Edit className="w-4 h-4" />
                     </button>
-                    <button className="p-2 text-red-500 hover:bg-red-100 rounded transition-colors duration-300">
+                    <button
+                      onClick={() => handleDeleteTask(task.id)}
+                      className="p-2 text-red-500 hover:bg-red-100 rounded transition-colors duration-300"
+                    >
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
