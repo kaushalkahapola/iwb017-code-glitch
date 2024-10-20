@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { Star, User, Calendar } from 'lucide-react'
+import { Star, User, Calendar, ArrowLeft } from 'lucide-react'
+import Link from 'next/link'
 
 // Sample data for completed tasks
 const initialCompletedTasks = [
@@ -18,7 +19,7 @@ export default function RatingsAndReviews() {
     setActiveReview(prev => ({ ...prev, taskId, rating }))
   }
 
-  const handleReviewChange = (e: { target: { value: string } }) => {
+  const handleReviewChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setActiveReview(prev => ({ ...prev, review: e.target.value }))
   }
 
@@ -34,8 +35,24 @@ export default function RatingsAndReviews() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50">
+      <nav className="bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between h-16">
+            <div className="flex">
+              <Link href="/tasks" className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900">
+                <ArrowLeft className="h-5 w-5 mr-2" />
+                Back to Tasks
+              </Link>
+            </div>
+            <div className="flex items-center">
+              <span className="text-gray-900 text-sm font-medium">Ratings and Reviews</span>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <div className="max-w-3xl mx-auto mt-8 px-4 sm:px-6 lg:px-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-8">Ratings and Reviews</h1>
 
         <div className="space-y-6">
@@ -79,7 +96,7 @@ export default function RatingsAndReviews() {
                       ))}
                     </div>
                     <textarea
-                      className="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:border-blue-500"
+                      className="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                       rows={3}
                       placeholder="Write your review here..."
                       value={activeReview.taskId === task.id ? activeReview.review : ''}
@@ -94,7 +111,7 @@ export default function RatingsAndReviews() {
                       </button>
                       <button
                         onClick={() => handleSubmitReview(task.id)}
-                        className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                       >
                         Submit Review
                       </button>
