@@ -271,7 +271,7 @@ export default function UserProfile({ params }: { params: { id: string } }) {
                   </div>
                   <div className="flex space-x-2">
                     <Link
-                      href={`/community/${community.id}`}
+                      href={`/communities/${community.id}`}
                       className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 transition-colors duration-300 text-sm"
                     >
                       Visit
