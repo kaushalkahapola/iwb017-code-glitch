@@ -9,8 +9,8 @@ import ballerina/lang.'int as langint;
     cors: {
         allowOrigins: ["http://localhost:3000"],
         allowCredentials: false,
-        allowHeaders: ["*"],
-        allowMethods: ["*"]
+        allowHeaders: ["Content-Type", "Authorization"],
+        allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
     }
 }
 
