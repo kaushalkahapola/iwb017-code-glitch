@@ -4,10 +4,15 @@ import ballerina/sql;
 import ballerina/lang.'int as langint;
 
 // CORS Configuration
-http:CorsConfig corsConfig = {
-    allowOrigins: ["*"],
-    allowCredentials: false
-};
+// The service-level CORS config applies globally to each `resource`.
+@http:ServiceConfig {
+    cors: {
+        allowOrigins: ["*"],
+        allowCredentials: false,
+        allowHeaders: ["*"],
+        allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
+    }
+}
 
 // HTTP Service
 service / on new http:Listener(9090) {
