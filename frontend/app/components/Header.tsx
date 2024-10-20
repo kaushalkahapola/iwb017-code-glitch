@@ -29,7 +29,7 @@ export default function Header() {
           href="/join"
           className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-green-700 disabled:pointer-events-none disabled:opacity-50 bg-green-600 text-white shadow hover:bg-green-700 h-9 px-4 py-2"
         >
-          Join the Community
+          Contact Us
         </Link>
       </div>
     </header>
