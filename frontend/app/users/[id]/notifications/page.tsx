@@ -1,93 +1,81 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import Link from 'next/link'
-import { Bell, CheckCircle, Trash2, ArrowRight } from 'lucide-react'
+import Link from "next/link";
+import { ArrowLeft, Bell } from "lucide-react";
 
-// Sample data for notifications
-const initialNotifications = [
-  { id: 1, message: "New task swap offer from Alice for 'Gardening Help'", isRead: false, link: "/tasks/1" },
-  { id: 2, message: "Your task 'JavaScript Tutoring' was accepted by Bob", isRead: true, link: "/tasks/2" },
-  { id: 3, message: "Reminder: You have a pending task swap with Carol", isRead: false, link: "/swaps/3" },
-  { id: 4, message: "New message in the 'DIY Enthusiasts' community", isRead: false, link: "/communities/4" },
-  { id: 5, message: "Your review for 'Lawn Mowing' task has been submitted", isRead: true, link: "/tasks/5" },
-]
+// Sample notifications data
+const notifications = [
+  {
+    id: 1,
+    type: "task_offer",
+    message: "John Doe has offered to help with your gardening task",
+    timestamp: "2023-06-20T10:30:00Z",
+    read: false,
+  },
+  {
+    id: 2,
+    type: "community_invite",
+    message: "You've been invited to join the 'Tech Enthusiasts' community",
+    timestamp: "2023-06-19T15:45:00Z",
+    read: true,
+  },
+  {
+    id: 3,
+    type: "task_completed",
+    message: "Your 'JavaScript Tutoring' task has been marked as completed",
+    timestamp: "2023-06-18T09:15:00Z",
+    read: true,
+  },
+];
 
-export default function NotificationsPage() {
-  const [notifications, setNotifications] = useState(initialNotifications)
-
-  const handleMarkAsRead = (id: number) => {
-    setNotifications(notifications.map(notif => 
-      notif.id === id ? { ...notif, isRead: true } : notif
-    ))
-  }
-
-  const handleDelete = (id: number) => {
-    setNotifications(notifications.filter(notif => notif.id !== id))
-  }
-
-  const handleMarkAllAsRead = () => {
-    setNotifications(notifications.map(notif => ({ ...notif, isRead: true })))
-  }
-
+export default function Notifications({ params }: { params: { id: string } }) {
   return (
-    <div className="min-h-screen bg-gray-100 py-8">
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          <div className="p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
-              <button
-                onClick={handleMarkAllAsRead}
-                className="text-sm text-blue-600 hover:text-blue-800 transition-colors"
-              >
-                Mark all as read
-              </button>
-            </div>
-            <div className="space-y-4">
-              {notifications.map((notification) => (
-                <div
-                  key={notification.id}
-                  className={`flex items-start p-4 rounded-lg ${
-                    notification.isRead ? 'bg-gray-50' : 'bg-blue-50'
+    <div className="h-full overflow-y-auto bg-gray-50 px-4 py-8">
+      <Link
+        href="/"
+        className="inline-flex items-center text-green-600 hover:text-green-800 mb-6 transition-colors duration-300"
+      >
+        <ArrowLeft className="w-5 h-5 mr-2" />
+        Back to Home
+      </Link>
+
+      <h1 className="text-3xl font-bold mb-6 text-gray-800">Notifications</h1>
+
+      <div className="bg-white shadow-md rounded-lg overflow-hidden border border-gray-200">
+        {notifications.map((notification) => (
+          <div
+            key={notification.id}
+            className={`p-4 border-b last:border-b-0 hover:bg-gray-50 transition-colors duration-300 ${
+              notification.read ? "bg-white" : "bg-green-50"
+            }`}
+          >
+            <div className="flex items-start">
+              <Bell
+                className={`w-5 h-5 mt-1 ${
+                  notification.read ? "text-gray-400" : "text-green-500"
+                }`}
+              />
+              <div className="ml-3 flex-grow">
+                <p
+                  className={`text-sm ${
+                    notification.read
+                      ? "text-gray-600"
+                      : "text-gray-800 font-semibold"
                   }`}
                 >
-                  <Bell className={`w-6 h-6 mr-3 ${notification.isRead ? 'text-gray-400' : 'text-blue-500'}`} />
-                  <div className="flex-grow">
-                    <Link href={notification.link} className="block mb-1 hover:underline">
-                      <p className={`text-sm ${notification.isRead ? 'text-gray-600' : 'text-gray-900 font-medium'}`}>
-                        {notification.message}
-                      </p>
-                    </Link>
-                    <div className="flex items-center text-xs text-gray-500">
-                      <button
-                        onClick={() => handleMarkAsRead(notification.id)}
-                        className="flex items-center mr-4 hover:text-blue-600 transition-colors"
-                      >
-                        <CheckCircle className="w-4 h-4 mr-1" />
-                        Mark as read
-                      </button>
-                      <button
-                        onClick={() => handleDelete(notification.id)}
-                        className="flex items-center hover:text-red-600 transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4 mr-1" />
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                  <Link href={notification.link} className="ml-2 text-blue-600 hover:text-blue-800">
-                    <ArrowRight className="w-5 h-5" />
-                  </Link>
-                </div>
-              ))}
-              {notifications.length === 0 && (
-                <p className="text-center text-gray-500 py-4">No notifications</p>
+                  {notification.message}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  {new Date(notification.timestamp).toLocaleString()}
+                </p>
+              </div>
+              {!notification.read && (
+                <span className="inline-block w-2 h-2 bg-green-500 rounded-full"></span>
               )}
             </div>
           </div>
-        </div>
+        ))}
       </div>
     </div>
-  )
+  );
 }
