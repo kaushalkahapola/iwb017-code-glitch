@@ -9,7 +9,7 @@ import "../styles/react-select-styles.css";
 import Link from "next/link";
 
 // Define interfaces
-interface Task {
+export interface Task {
   task_id: number;
   title: string;
   description: string;
@@ -17,7 +17,7 @@ interface Task {
   offered_task: string;
   status: string;
   community_id: number | null;
-  created_at: string;
+  created_at: [number, number];
 }
 
 interface User {
@@ -265,9 +265,11 @@ export default function TaskFeed() {
               </div>
               <div className="bg-gray-50 px-6 py-4">
                 <div className="flex justify-between">
-                  <button className="text-green-600 hover:text-green-800 font-medium transition-colors duration-300">
-                    View Details
-                  </button>
+                  <Link href={`/tasks/${task.task_id}`} passHref>
+                    <span className="text-green-600 hover:text-green-800 font-medium transition-colors duration-300 cursor-pointer">
+                      View Details
+                    </span>
+                  </Link>
                   <button className="text-green-600 hover:text-green-800 font-medium transition-colors duration-300">
                     Offer Swap
                   </button>

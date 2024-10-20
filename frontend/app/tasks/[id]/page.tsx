@@ -1,140 +1,175 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import Image from 'next/image'
-import Link from 'next/link'
-import { MapPin, Users, Star, MessageSquare, Send, ArrowLeft } from 'lucide-react'
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { Users, Star, ArrowLeft } from "lucide-react";
+import { Task } from "../page";
+
+interface User {
+  name: string;
+  rating: number;
+}
+
+interface Community {
+  name: string;
+}
+
+function formatDate(dateArray: [number, number]): string {
+  const [seconds, _] = dateArray;
+  const date = new Date(seconds * 1000); // Convert seconds to milliseconds
+  return date.toLocaleString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
 
 export default function TaskDetails({ params }: { params: { id: string } }) {
-  const [comment, setComment] = useState('')
+  const [task, setTask] = useState<Task | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [community, setCommunity] = useState<Community | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // This would typically come from your API or props
-  const task = {
-    id: params.id,
-    title: 'Garden Maintenance',
-    description: 'I need help with weeding, planting new flowers, and general maintenance of my backyard garden. The garden is approximately 500 square feet and hasn\'t been maintained for a few months. I\'m looking for someone with gardening experience who can help bring it back to life. Tools will be provided, but if you have your own, feel free to bring them.',
-    offeredTask: 'Cooking lessons (specializing in Italian cuisine)',
-    user: {
-      name: 'Alice Johnson',
-      picture: '/placeholder.svg?height=64&width=64&text=AJ',
-      rating: 4.8,
-    },
-    location: 'San Francisco, CA',
-    status: 'Open',
-    community: 'Green Thumbs',
-    comments: [
-      { id: '1', user: 'Bob Smith', text: 'How long do you estimate this task will take?', timestamp: '2023-06-15T14:30:00Z' },
-      { id: '2', user: 'Alice Johnson', text: 'I think it would take about 3-4 hours for an experienced gardener.', timestamp: '2023-06-15T15:45:00Z' },
-    ]
-  }
+  useEffect(() => {
+    const fetchTaskDetails = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:9090/tasks/${params.id}`
+        );
+        if (!response.ok) throw new Error("Failed to fetch task details");
+        const data: Task = await response.json();
+        setTask(data);
 
-  const handleCommentSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    // Here you would typically send the comment to your API
-    console.log('Submitting comment:', comment)
-    setComment('')
-  }
+        const userResponse = await fetch(
+          `http://localhost:9090/users/${data.posted_by}`
+        );
+        if (!userResponse.ok) throw new Error("Failed to fetch user details");
+        const userData: User = await userResponse.json();
+        setUser(userData);
+
+        if (data.community_id) {
+          const communityResponse = await fetch(
+            `http://localhost:9090/communities/${data.community_id}`
+          );
+          if (!communityResponse.ok)
+            throw new Error("Failed to fetch community details");
+          const communityData: Community = await communityResponse.json();
+          setCommunity(communityData);
+        }
+
+        setIsLoading(false);
+      } catch (err) {
+        setError("Error fetching details");
+        setIsLoading(false);
+      }
+    };
+
+    fetchTaskDetails();
+  }, [params.id]);
+
+  if (isLoading)
+    return (
+      <div className="flex justify-center items-center h-screen">
+        Loading...
+      </div>
+    );
+  if (error)
+    return (
+      <div className="flex justify-center items-center h-screen text-red-500">
+        {error}
+      </div>
+    );
+  if (!task || !user)
+    return (
+      <div className="flex justify-center items-center h-screen">
+        No task found
+      </div>
+    );
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
       <nav className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex">
-              <Link href="/tasks" className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900">
-                <ArrowLeft className="h-5 w-5 mr-2" />
-                Back to Tasks
-              </Link>
-            </div>
-            <div className="flex items-center">
-              <span className="text-gray-900 text-sm font-medium">Task Details</span>
-            </div>
+          <div className="flex justify-between h-16 items-center">
+            <Link
+              href="/tasks"
+              className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-green-700 bg-green-100 hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+            >
+              <ArrowLeft className="h-5 w-5 mr-2" />
+              Back to Tasks
+            </Link>
+            <span className="text-gray-900 text-lg font-semibold">
+              Task Details
+            </span>
           </div>
         </div>
       </nav>
 
-      <div className="max-w-3xl mx-auto mt-8">
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+      <div className="max-w-3xl mx-auto mt-8 px-4 sm:px-6 lg:px-8">
+        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
           <div className="p-6">
-            <h1 className="text-3xl font-bold mb-4 text-gray-900">{task.title}</h1>
-            
-            <div className="flex items-center mb-6">
-              <Image
-                src={task.user.picture}
-                alt={task.user.name}
-                width={64}
-                height={64}
-                className="rounded-full mr-4"
-              />
-              <div>
-                <h2 className="text-xl font-semibold text-gray-800">{task.user.name}</h2>
-                <div className="flex items-center">
-                  <Star className="w-5 h-5 text-yellow-400 mr-1" />
-                  <span className="text-gray-600">{task.user.rating.toFixed(1)}</span>
+            <h1 className="text-3xl font-bold mb-4 text-gray-900">
+              {task.title}
+            </h1>
+
+            <div className="mb-6 p-4 bg-green-50 rounded-lg">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-800">
+                    {user.name}
+                  </h2>
+                  <div className="flex items-center mt-1">
+                    <Star className="w-5 h-5 text-yellow-400 mr-1" />
+                    <span className="text-gray-600">
+                      {user.rating.toFixed(1)}
+                    </span>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <span
+                    className={`px-3 py-1 rounded-full text-sm font-medium ${
+                      task.status === "Open"
+                        ? "bg-green-100 text-green-800"
+                        : task.status === "Accepted"
+                        ? "bg-yellow-100 text-yellow-800"
+                        : "bg-blue-100 text-blue-800"
+                    }`}
+                  >
+                    {task.status}
+                  </span>
                 </div>
               </div>
             </div>
 
             <div className="space-y-4 mb-6">
-              <p className="text-gray-700">{task.description}</p>
-              <div className="flex items-center text-gray-600">
-                <MapPin className="w-5 h-5 mr-2" />
-                <span>{task.location}</span>
-              </div>
-              <div className="flex items-center text-gray-600">
-                <Users className="w-5 h-5 mr-2" />
-                <span>{task.community}</span>
-              </div>
+              <p className="text-gray-700 leading-relaxed">
+                {task.description}
+              </p>
+              {community && (
+                <div className="flex items-center text-gray-600">
+                  <Users className="w-5 h-5 mr-2" />
+                  <span>Community: {community.name}</span>
+                </div>
+              )}
               <div className="flex justify-between items-center">
-                <span className="text-gray-600">Offered: {task.offeredTask}</span>
-                <span className={`px-3 py-1 rounded-full text-sm ${
-                  task.status === 'Open' ? 'bg-green-100 text-green-800' :
-                  task.status === 'Accepted' ? 'bg-yellow-100 text-yellow-800' :
-                  'bg-blue-100 text-blue-800'
-                }`}>
-                  {task.status}
+                <span className="text-gray-600 font-medium">
+                  Offered: {task.offered_task}
+                </span>
+                <span className="text-gray-500 text-sm">
+                  Created: {formatDate(task.created_at)}
                 </span>
               </div>
             </div>
 
-            <button className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition-colors">
+            <button className="w-full bg-green-600 text-white py-3 px-4 rounded-md hover:bg-green-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
               Offer Task Swap
             </button>
-          </div>
-
-          <div className="bg-gray-50 p-6">
-            <h3 className="text-xl font-semibold mb-4 text-gray-800">Comments</h3>
-            <div className="space-y-4 mb-6">
-              {task.comments.map((comment) => (
-                <div key={comment.id} className="bg-white p-4 rounded-md shadow">
-                  <div className="flex justify-between items-start mb-2">
-                    <span className="font-semibold text-gray-800">{comment.user}</span>
-                    <span className="text-sm text-gray-500">
-                      {new Date(comment.timestamp).toLocaleString()}
-                    </span>
-                  </div>
-                  <p className="text-gray-700">{comment.text}</p>
-                </div>
-              ))}
-            </div>
-            <form onSubmit={handleCommentSubmit} className="flex items-center">
-              <input
-                type="text"
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                placeholder="Add a comment..."
-                className="flex-grow p-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-green-500"
-              />
-              <button
-                type="submit"
-                className="bg-green-600 text-white p-2 rounded-r-md hover:bg-green-700 transition-colors"
-              >
-                <Send className="w-5 h-5" />
-              </button>
-            </form>
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }
