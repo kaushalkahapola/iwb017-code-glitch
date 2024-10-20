@@ -93,7 +93,7 @@ export default function CommunitiesPage() {
   return (
     <>
       <Header />
-      <div className="container mx-auto py-8 px-4 md:px-6">
+      <div className="container mx-auto py-8 px-4 md:px-10">
         <h1 className="text-3xl font-bold mb-6">Communities</h1>
 
       {/* Search and Sort section */}
