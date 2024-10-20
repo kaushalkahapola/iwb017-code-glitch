@@ -1,0 +1,22 @@
+.typing-text {
+    display: inline-block;
+    white-space: nowrap; /* Prevent line breaking */
+    overflow: hidden; /* Hide the overflow to create the typing effect */
+  }
+  
+  .blinking-cursor {
+    display: inline-block;
+    font-weight: 100;
+    color: green;
+    animation: blink 1s step-end infinite;
+  }
+  
+  @keyframes blink {
+    from, to {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0;
+    }
+  }
+  
