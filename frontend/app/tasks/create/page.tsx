@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useSearchParams } from 'next/navigation'
+import Link from 'next/link'
+import { ArrowLeft } from 'lucide-react'
 
 // Add this type definition
 type FormErrors = {
@@ -13,8 +14,6 @@ type FormErrors = {
 
 export default function CreateEditTask() {
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const id = searchParams.get('id') // If editing an existing task, the id will be in the URL
 
   const [task, setTask] = useState({
     title: '',
@@ -34,7 +33,6 @@ export default function CreateEditTask() {
       ...prevTask,
       [name]: value
     }))
-    // Clear the error for this field when the user starts typing
     if (errors[name as keyof typeof errors]) {
       setErrors(prevErrors => ({
         ...prevErrors,
@@ -55,23 +53,31 @@ export default function CreateEditTask() {
   const handleSubmit = (e: { preventDefault: () => void }) => {
     e.preventDefault()
     if (validateForm()) {
-      // Here you would typically send the task data to your API
       console.log('Submitting task:', task)
-      // After successful submission, redirect to the task details page
-      router.push(`/tasks/${id || 'new'}`)
+      router.push('/tasks')
     }
   }
 
-  const handleCancel = () => {
-    // Redirect back to the task list or details page
-    router.push('/tasks')
-  }
-
   return (
-    <div className="min-h-screen bg-gray-100 py-8">
-      <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-md overflow-hidden">
+    <div className="min-h-screen bg-gray-50">
+      <nav className="bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between h-16">
+            <div className="flex">
+              <Link href="/tasks" className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900">
+                <ArrowLeft className="h-5 w-5 mr-2" />
+                Back to Tasks
+              </Link>
+            </div>
+            <div className="flex items-center">
+              <span className="text-gray-900 text-sm font-medium">Create New Task</span>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <div className="max-w-2xl mx-auto mt-8 bg-white rounded-lg shadow-md overflow-hidden">
         <div className="p-6">
-          <h1 className="text-2xl font-bold mb-6">{id ? 'Edit Task' : 'Create New Task'}</h1>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
@@ -83,7 +89,7 @@ export default function CreateEditTask() {
                 name="title"
                 value={task.title}
                 onChange={handleChange}
-                className={`w-full px-3 py-2 border rounded-md ${errors.title ? 'border-red-500' : 'border-gray-300'}`}
+                className={`w-full px-3 py-2 border rounded-md ${errors.title ? 'border-red-500' : 'border-gray-300'} focus:outline-none focus:ring-2 focus:ring-green-500`}
                 placeholder="Enter task title"
               />
               {errors.title && <p className="mt-1 text-sm text-red-500">{errors.title}</p>}
@@ -99,7 +105,7 @@ export default function CreateEditTask() {
                 value={task.description}
                 onChange={handleChange}
                 rows={4}
-                className={`w-full px-3 py-2 border rounded-md ${errors.description ? 'border-red-500' : 'border-gray-300'}`}
+                className={`w-full px-3 py-2 border rounded-md ${errors.description ? 'border-red-500' : 'border-gray-300'} focus:outline-none focus:ring-2 focus:ring-green-500`}
                 placeholder="Describe your task in detail"
               ></textarea>
               {errors.description && <p className="mt-1 text-sm text-red-500">{errors.description}</p>}
@@ -115,7 +121,7 @@ export default function CreateEditTask() {
                 name="offeredTask"
                 value={task.offeredTask}
                 onChange={handleChange}
-                className={`w-full px-3 py-2 border rounded-md ${errors.offeredTask ? 'border-red-500' : 'border-gray-300'}`}
+                className={`w-full px-3 py-2 border rounded-md ${errors.offeredTask ? 'border-red-500' : 'border-gray-300'} focus:outline-none focus:ring-2 focus:ring-green-500`}
                 placeholder="What will you offer in return?"
               />
               {errors.offeredTask && <p className="mt-1 text-sm text-red-500">{errors.offeredTask}</p>}
@@ -130,7 +136,7 @@ export default function CreateEditTask() {
                 name="community"
                 value={task.community}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
               >
                 <option value="">Select a community</option>
                 {communities.map((community) => (
@@ -141,36 +147,18 @@ export default function CreateEditTask() {
               </select>
             </div>
 
-            <div>
-              <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
-                Status
-              </label>
-              <select
-                id="status"
-                name="status"
-                value={task.status}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-              >
-                <option value="Open">Open</option>
-                <option value="Accepted">Accepted</option>
-                <option value="Completed">Completed</option>
-              </select>
-            </div>
-
             <div className="flex justify-end space-x-4">
-              <button
-                type="button"
-                onClick={handleCancel}
-                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              <Link
+                href="/tasks"
+                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
               >
                 Cancel
-              </button>
+              </Link>
               <button
                 type="submit"
-                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
               >
-                {id ? 'Update Task' : 'Create Task'}
+                Create Task
               </button>
             </div>
           </form>
