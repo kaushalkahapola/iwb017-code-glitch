@@ -142,8 +142,6 @@ export default function CreateEditTask() {
           posted_by:userId
         };
 
-        console.log(taskToSend)
-
         const response = await fetch("http://localhost:9090/tasks", {
           method: "POST",
           headers: {
