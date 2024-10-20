@@ -217,6 +217,26 @@ service / on new http:Listener(9090) {
         return updateTask(intId, task);
     }
 
+    // GET all tasks by community
+    resource function get tasks/community/[string communityId]() returns Task[]|http:InternalServerError|error {
+        int|error intCommunityId = langint:fromString(communityId);
+        if intCommunityId is error {
+            return error("Invalid community id");
+        }
+        Task[] tasks = check getTasksByCommunity(intCommunityId);
+        return tasks;
+    }
+
+    // GET all tasks by user
+    resource function get tasks/user/[string userId]() returns Task[]|http:InternalServerError|error {
+        int|error intUserId = langint:fromString(userId);
+        if intUserId is error {
+            return error("Invalid user id");
+        }
+        Task[] tasks = check getTasksByUser(intUserId);
+        return tasks;
+    }
+
 
     // ------- Task Swap Operations ------- //
 
