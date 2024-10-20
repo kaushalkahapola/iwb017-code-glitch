@@ -36,7 +36,7 @@ export default function CommunitiesPage() {
   useEffect(() => {
     const fetchCommunities = async () => {
       try {
-        const response = await fetch('/api/communities')
+        const response = await fetch('http://localhost:9090/communities')
         if (!response.ok) {
           throw new Error('Failed to fetch communities')
         }
@@ -44,7 +44,7 @@ export default function CommunitiesPage() {
         
         // Fetch member count for each community
         const communitiesWithMemberCount = await Promise.all(data.map(async (community) => {
-          const membersResponse = await fetch(`/api/communityMembers/${community.community_id}`)
+          const membersResponse = await fetch(`http://localhost:9090/communityMembers/${community.community_id}`)
           if (membersResponse.ok) {
             const members: User[] = await membersResponse.json()
             return { ...community, memberCount: members.length }

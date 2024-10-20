@@ -21,7 +21,13 @@ export default function Sidebar() {
   return (
     <aside className="bg-white w-64 min-h-screen flex flex-col border-r border-gray-200">
       <div className="p-4">
-        <h2 className="text-2xl font-bold text-green-600">SkillSwap</h2>
+      <Link href="/" className="flex items-center space-x-2">
+          <span className="text-2xl font-bold tracking-tight">
+            <span className="text-green-600">Task</span>
+            <span className="text-gray-900">Swap</span>
+            <span className="inline-block w-2 h-2 bg-green-600 rounded-full ml-1 animate-pulse"></span>
+          </span>
+        </Link>
       </div>
       <nav className="flex-grow">
         <ul className="space-y-2 py-4">
