@@ -14,7 +14,7 @@ interface Community {
   name: string;
 }
 
-function formatDate(dateArray: [number, number]): string {
+export function formatDate(dateArray: [number, number]): string {
   const [seconds, _] = dateArray;
   const date = new Date(seconds * 1000); // Convert seconds to milliseconds
   return date.toLocaleString("en-US", {
