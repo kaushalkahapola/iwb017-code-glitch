@@ -31,6 +31,13 @@ export default function CreateEditTask() {
 
   const [userId, setUserId] = useState<string | null>(null);
 
+  const [task, setTask] = useState({
+    title: "",
+    description: "",
+    offered_task: "",
+    community_id: null as number | null
+  });
+
   useEffect(() => {
     const fetchUserId = async () => {
       const token = localStorage.getItem("token"); // Assuming you store the token in localStorage after login
@@ -41,8 +48,10 @@ export default function CreateEditTask() {
 
       try {
         const response = await fetch("/api/user", {
+          method:"GET",
           headers: {
-            Authorization: `Bearer ${token}`,
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
           },
         });
 
@@ -61,13 +70,6 @@ export default function CreateEditTask() {
     fetchUserId();
   }, []);
 
-  const [task, setTask] = useState({
-    title: "",
-    description: "",
-    offered_task: "",
-    community_id: null as number | null,
-    posted_by: userId, // Added posted_by with a default user ID of 1
-  });
 
   const [errors, setErrors] = useState<FormErrors>({});
   const [communities, setCommunities] = useState<Community[]>([]);
@@ -112,7 +114,7 @@ export default function CreateEditTask() {
   ) => {
     setTask((prevTask) => ({
       ...prevTask,
-      community_id: selectedOption ? selectedOption.value : null,
+      community_id: selectedOption ? selectedOption.value : null
     }));
   };
 
@@ -137,7 +139,10 @@ export default function CreateEditTask() {
         const taskToSend = {
           ...task,
           community_id: task.community_id ? task.community_id.toString() : null,
+          posted_by:userId
         };
+
+        console.log(taskToSend)
 
         const response = await fetch("http://localhost:9090/tasks", {
           method: "POST",

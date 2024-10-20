@@ -70,7 +70,7 @@ export default function Hero() {
           </div>
           <div className="space-x-4">
             <Link
-              href={userId ? `users/${userId}/profile` : "/login"}
+              href={userId ? `users/${userId}/profile` : "/register"}
               className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-all duration-300 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-green-700 disabled:pointer-events-none disabled:opacity-50 bg-green-600 text-white shadow hover:bg-green-700 hover:shadow-lg h-9 px-4 py-2 transform hover:-translate-y-0.5"
             >
               Get Started
