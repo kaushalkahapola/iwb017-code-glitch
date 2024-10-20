@@ -81,7 +81,7 @@ service / on new http:Listener(9090) {
     }
 
     // POST create a new community
-    resource function post communities(CreateCommunityRequest community) returns sql:ExecutionResult|sql:Error {
+    resource function post communities(CreateCommunityRequest community) returns sql:ExecutionResult|sql:Error| error {
         return createCommunity(community);
     }
 
