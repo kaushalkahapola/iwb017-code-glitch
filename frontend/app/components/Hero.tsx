@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -7,6 +7,38 @@ import "./Hero.css";
 export default function Hero() {
   const [text, setText] = useState("");
   const fullText = "Swap Tasks, Build Communities";
+
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUserId = async () => {
+      const token = localStorage.getItem("token"); // Assuming you store the token in localStorage after login
+      if (!token) {
+        console.error("No token found");
+        return;
+      }
+
+      try {
+        const response = await fetch("/api/user", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log(data);
+          setUserId(data.id);
+        } else {
+          console.error("Failed to fetch user ID");
+        }
+      } catch (error) {
+        console.error("Error fetching user ID:", error);
+      }
+    };
+
+    fetchUserId();
+  }, []);
 
   // Typing effect logic
   useEffect(() => {
@@ -32,13 +64,13 @@ export default function Hero() {
               <span className="blinking-cursor">|</span>
             </h1>
             <p className="mx-auto max-w-[700px] text-green-700 md:text-xl animate-[pulse_4s_ease-in-out_infinite]">
-              Join our local task exchange platform and connect with neighbors to share skills, save money, and
-              strengthen your community.
+              Join our local task exchange platform and connect with neighbors
+              to share skills, save money, and strengthen your community.
             </p>
           </div>
           <div className="space-x-4">
             <Link
-              href="/tasks"
+              href={userId ? `users/${userId}/profile` : "/login"}
               className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-all duration-300 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-green-700 disabled:pointer-events-none disabled:opacity-50 bg-green-600 text-white shadow hover:bg-green-700 hover:shadow-lg h-9 px-4 py-2 transform hover:-translate-y-0.5"
             >
               Get Started
