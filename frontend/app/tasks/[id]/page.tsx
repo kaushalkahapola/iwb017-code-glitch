@@ -6,7 +6,7 @@ import { Users, Star, ArrowLeft } from "lucide-react";
 import { Task } from "../page";
 
 interface User {
-  name: string;
+  username: string;
   rating: number;
 }
 
@@ -119,7 +119,7 @@ export default function TaskDetails({ params }: { params: { id: string } }) {
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-xl font-semibold text-gray-800">
-                    {user.name}
+                    {user.username}
                   </h2>
                   <div className="flex items-center mt-1">
                     <Star className="w-5 h-5 text-yellow-400 mr-1" />
