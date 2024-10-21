@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Users, MapPin, Calendar, ArrowLeft, CheckCircle } from 'lucide-react'
 import Header from '../../components/Header'
 import Footer from '../../components/Footer'
+import {jwtDecode} from 'jwt-decode'
 
 type Community = {
     community_id: number;
@@ -48,10 +49,25 @@ export default function CommunityDetail({ params }: { params: { id: string } }) 
   const [tasks, setTasks] = useState<Task[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [isJoined, setIsJoined] = useState(false)
+  const [isMember, setIsMember] = useState(false)
+  const [userId, setUserId] = useState<number | null>(null)
+  const [creator, setCreator] = useState<User | null>(null)
+  const [token, setToken] = useState<string | null>(null)
+
+  useEffect(() => {
+    // Access localStorage in a client-side effect
+    const storedToken = localStorage.getItem('token')
+    if (storedToken) {
+      setToken(storedToken)
+      const decoded = jwtDecode(storedToken) as { id: number; username: string; email: string }
+      setUserId(decoded.id)
+    }
+  }, [])
 
   useEffect(() => {
     const fetchCommunityData = async () => {
+      if (!token) return;
+
       try {
         // Fetch community details
         const communityResponse = await fetch(`http://localhost:9090/communities/${params.id}`)
@@ -66,6 +82,16 @@ export default function CommunityDetail({ params }: { params: { id: string } }) 
         if (membersResponse.ok) {
           const membersData: User[] = await membersResponse.json()
           setMembers(membersData)
+
+          let decoded: { id: number; username: string; email: string } | undefined; // Declare decoded as possibly undefined
+          if (token) {
+            decoded = jwtDecode(token) as { id: number; username: string; email: string }; // Assign decoded properly
+          }
+
+          if (decoded && decoded.id) {
+            const isMember = membersData.some(member => member.user_id === decoded.id)
+            setIsMember(isMember)
+          }
         }
 
         // Fetch community tasks
@@ -73,6 +99,15 @@ export default function CommunityDetail({ params }: { params: { id: string } }) 
         if (tasksResponse.ok) {
           const tasksData: Task[] = await tasksResponse.json()
           setTasks(tasksData)
+        }
+
+        // Fetch creator details
+        if (communityData.created_by) {
+          const creatorResponse = await fetch(`http://localhost:9090/users/${communityData.created_by}`)
+          if (creatorResponse.ok) {
+            const creatorData: User = await creatorResponse.json()
+            setCreator(creatorData)
+          }
         }
       } catch (err) {
         setError('Failed to load community data. Please try again later.')
@@ -82,11 +117,56 @@ export default function CommunityDetail({ params }: { params: { id: string } }) 
     }
 
     fetchCommunityData()
-  }, [params.id])
+  }, [params.id, token])
 
-  const handleJoin = () => {
-    // Here you would typically send a request to your API to join the community
-    setIsJoined(!isJoined)
+  // New effect to log members after state update
+  useEffect(() => {
+    console.log('Updated members state:', members)
+  }, [members])
+
+  const handleMembership = async () => {
+    if (!token || userId === null) {
+      console.error('User not authenticated')
+      return
+    }
+
+    try {
+      let response;
+      if (isMember) {
+        // Leave community
+        response = await fetch(`http://localhost:9090/communityMembers/${params.id}/${userId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+      } else {
+        // Join community
+        response = await fetch('http://localhost:9090/communityMembers', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            community_id: parseInt(params.id),
+            user_id: userId
+          })
+        })
+      }
+
+      if (response.ok) {
+        setIsMember(!isMember)
+        // Optionally, you can refetch the members list here to update the UI
+        // fetchMembers()
+      } else {
+        const errorData = await response.json()
+        throw new Error(errorData.message || `Failed to ${isMember ? 'leave' : 'join'} community`)
+      }
+    } catch (error) {
+      console.error('Error:', error)
+      // Handle error (e.g., show an error message to the user)
+    }
   }
 
   if (isLoading) {
@@ -114,14 +194,14 @@ export default function CommunityDetail({ params }: { params: { id: string } }) 
               <div className="flex justify-between items-start mb-6">
                 <h1 className="text-4xl font-bold text-gray-900">{community.name}</h1>
                 <button
-                  onClick={handleJoin}
+                  onClick={handleMembership}
                   className={`px-6 py-2 rounded-full text-white font-semibold transition duration-300 ${
-                    isJoined
-                      ? 'bg-green-500 hover:bg-green-600'
-                      : 'bg-green-400 hover:bg-green-500'
+                    isMember
+                      ? 'bg-red-500 hover:bg-red-600'
+                      : 'bg-green-500 hover:bg-green-600'
                   }`}
                 >
-                  {isJoined ? 'Joined' : 'Join Community'}
+                  {isMember ? 'Leave Community' : 'Join Community'}
                 </button>
               </div>
               <p className="text-xl text-gray-600 mb-8">{community.description}</p>
@@ -138,6 +218,12 @@ export default function CommunityDetail({ params }: { params: { id: string } }) 
                   <Calendar className="w-5 h-5 mr-2 text-purple-500" />
                   Founded {formatTimestamp(community.created_at)}
                 </div>
+                {creator && (
+                  <div className="flex items-center bg-gray-100 rounded-full px-4 py-2">
+                    <CheckCircle className="w-5 h-5 mr-2 text-orange-500" />
+                    Created by {creator.username}
+                  </div>
+                )}
               </div>
 
               <h2 className="text-2xl font-semibold mb-6 text-gray-800">Community Tasks</h2>
