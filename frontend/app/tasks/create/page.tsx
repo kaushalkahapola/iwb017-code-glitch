@@ -11,6 +11,7 @@ import {
   CheckCircle,
 } from "lucide-react";
 import Select, { SingleValue } from "react-select";
+import { jwtDecode } from "jwt-decode";
 
 // Add this type definition
 type FormErrors = {
@@ -28,8 +29,9 @@ type CommunityOption = { value: number; label: string | undefined };
 
 export default function CreateEditTask({ communityId }: { communityId?: number }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
-  const [userId, setUserId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<number | null>(null);
 
   const [task, setTask] = useState({
     title: "",
@@ -39,37 +41,34 @@ export default function CreateEditTask({ communityId }: { communityId?: number }
   });
 
   useEffect(() => {
-    const fetchUserId = async () => {
-      const token = localStorage.getItem("token"); // Assuming you store the token in localStorage after login
-      if (!token) {
-        console.error("No token found");
-        return;
-      }
+    // Get user ID from token
+    const token = localStorage.getItem("token");
+    if (token) {
+      const decoded = jwtDecode(token) as { id: number; username: string; email: string };
+      setUserId(decoded.id);
+    }
+  }, []);
+
+  useEffect(() => {
+    // Fetch user's joined communities
+    const fetchUserCommunities = async () => {
+      if (!userId) return;
 
       try {
-        const response = await fetch("/api/user", {
-          method:"GET",
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-        });
-
+        const response = await fetch(`http://localhost:9090/memberCommunities/${userId}`);
         if (response.ok) {
-          const data = await response.json();
-          console.log(data);
-          setUserId(data.id);
+          const data: Community[] = await response.json();
+          setCommunities(data);
         } else {
-          console.error("Failed to fetch user ID");
+          console.error("Failed to fetch user communities");
         }
       } catch (error) {
-        console.error("Error fetching user ID:", error);
+        console.error("Error fetching user communities:", error);
       }
     };
 
-    fetchUserId();
-  }, []);
-
+    fetchUserCommunities();
+  }, [userId]);
 
   const [errors, setErrors] = useState<FormErrors>({});
   const [communities, setCommunities] = useState<Community[]>([]);
@@ -77,6 +76,11 @@ export default function CreateEditTask({ communityId }: { communityId?: number }
   const [error, setError] = useState<string | null>(null);
   const [isCreated, setIsCreated] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  const communityOptions: CommunityOption[] = communities.map(community => ({
+    value: community.community_id,
+    label: community.name
+  }));
 
   useEffect(() => {
     fetchCommunities();
