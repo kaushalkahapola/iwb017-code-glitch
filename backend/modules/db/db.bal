@@ -15,3 +15,7 @@ mysql:Client dbClient = check new(
     database = database,
     options = connectionOptions
 );
+
+public function getDbClient() returns mysql:Client {
+    return dbClient;
+}

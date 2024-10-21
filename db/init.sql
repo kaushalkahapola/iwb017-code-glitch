@@ -90,3 +90,57 @@ CREATE INDEX idx_tasks_posted_by ON Tasks (posted_by);
 CREATE INDEX idx_community_members_user_id ON CommunityMembers (user_id);
 CREATE INDEX idx_task_swaps_task_id ON TaskSwaps (task_id);
 CREATE INDEX idx_ratings_rated_user ON Ratings (rated_user);
+
+
+
+CREATE TABLE SwapRequests (
+    request_id INT AUTO_INCREMENT PRIMARY KEY,
+    task_id INT NOT NULL,
+    posted_by INT NOT NULL,
+    requested_by INT NOT NULL,
+    request_status VARCHAR(50) DEFAULT 'Pending', -- Can be 'Pending', 'Accepted', or 'Rejected'
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (task_id) REFERENCES Tasks(task_id) ON DELETE CASCADE,
+    FOREIGN KEY (posted_by) REFERENCES Users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (requested_by) REFERENCES Users(user_id) ON DELETE CASCADE
+);
+
+
+DELIMITER $$
+
+CREATE TRIGGER notify_user_on_swap_request_update
+AFTER UPDATE ON SwapRequests
+FOR EACH ROW
+BEGIN
+    -- Notify when the request is accepted
+    IF NEW.request_status = 'Accepted' AND OLD.request_status = 'Pending' THEN
+        -- Notify the user who made the request
+        INSERT INTO Notifications (user_id, message, created_at)
+        VALUES (
+            NEW.requested_by,
+            CONCAT('Your swap request for task ID ', NEW.task_id, ' has been accepted.'),
+            CURRENT_TIMESTAMP
+        );
+    END IF;
+    
+    -- Notify when the request is rejected
+    IF NEW.request_status = 'Rejected' AND OLD.request_status = 'Pending' THEN
+        -- Notify the user who made the request
+        INSERT INTO Notifications (user_id, message, created_at)
+        VALUES (
+            NEW.requested_by,
+            CONCAT('Your swap request for task ID ', NEW.task_id, ' has been rejected.'),
+            CURRENT_TIMESTAMP
+        );
+    END IF;
+END$$
+
+DELIMITER ;
+
+-- Insert mock swap requests
+INSERT INTO SwapRequests (task_id, posted_by, requested_by, request_status)
+VALUES
+    (1, 1, 2, 'Pending'),  -- Bob requests to swap with Alice's task (task_id 1)
+    (2, 4, 1, 'Pending'),  -- Alice requests to swap with Diana's task (task_id 2)
+    (3, 2, 3, 'Rejected'), -- Charlie requested Bob's task, but it was rejected
+    (1, 1, 3, 'Accepted'); -- Charlie requests to swap with Alice's task (task_id 1) and was accepted

@@ -12,7 +12,6 @@ const db = mysql.createPool({
 export async function POST(req: Request) {
   const { username, email, password, location } = await req.json();
   const bio = "";
-  console.log(username, email, password, location, bio);
 
   // Hash the password
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -23,6 +22,7 @@ export async function POST(req: Request) {
       "INSERT INTO users (username, email, location, bio, password_hash) VALUES (?, ?, ? , ? , ?)",
       [username, email, location, bio, hashedPassword]
     );
+    
     return NextResponse.json({ message: "User registered successfully" });
   } catch (error) {
     return NextResponse.json(

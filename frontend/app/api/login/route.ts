@@ -52,9 +52,18 @@ export async function POST(req: Request) {
     { id: user.user_id, username: user.username, email: user.email },
     SECRET,
     {
-      expiresIn: "1h",
+      expiresIn: "720h",
     }
   );
 
-  return NextResponse.json({ token, user });
+  const response = NextResponse.json({ token, user });
+  response.cookies.set('auth-token', token, {
+    httpOnly: true, // Prevents access via JavaScript
+    // secure: process.env.NODE_ENV === 'production', // Only set this flag in production
+    maxAge: 30 * 60 * 60, // 30 hours
+    path: '/', // Send cookie on every route
+  });
+
+
+  return response;
 }

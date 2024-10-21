@@ -24,10 +24,9 @@ export default function Login() {
       if (response.ok) {
         // Successful login
         const data = await response.json();
-        console.log(data);
         //save token to local storage
         localStorage.setItem("token", data.token);
-        router.push("/"); // Redirect to dashboard or home page
+        router.push(`/tasks`); // Redirect to dashboard or home page
       } else {
         const data = await response.json();
         setError(data.message || "Login failed");

@@ -1,12 +1,58 @@
+'use client'
+
 import Link from "next/link"
+import { useState, useEffect } from "react";
 
 export default function Header() {
 
-  const links = {
-    Dashboard: "/users/1/profile",
+  const [userId, setUserId] = useState<string | null>(null);
+  // Updated links to be a state variable
+  const [links, setLinks] = useState<{ [key: string]: string }>({
+    Dashboard: `/users/${userId}/profile`,
     Communities: "/communities",
     Tasks: "/tasks"
-  }
+  });
+
+  useEffect(() => {
+    const fetchUserId = async () => {
+      const token = localStorage.getItem("token"); // Assuming you store the token in localStorage after login
+      if (!token) {
+        console.error("No token found");
+        return;
+      }
+
+      try {
+        const response = await fetch("/api/user", {
+          method:"GET",
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log(data);
+          setUserId(data.id);
+        } else {
+          console.error("Failed to fetch user ID");
+        }
+      } catch (error) {
+        console.error("Error fetching user ID:", error);
+      }
+    };
+
+    fetchUserId();
+  }, []);
+
+  // Update links whenever userId changes
+  useEffect(() => {
+    setLinks({
+      Dashboard: `/users/${userId}/profile`,
+      Communities: "/communities",
+      Tasks: "/tasks"
+    });
+  }, [userId]);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 px-4 md:px-6">

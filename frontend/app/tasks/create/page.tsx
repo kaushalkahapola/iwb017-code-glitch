@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -11,6 +11,7 @@ import {
   CheckCircle,
 } from "lucide-react";
 import Select, { SingleValue } from "react-select";
+import { jwtDecode } from "jwt-decode";
 
 // Add this type definition
 type FormErrors = {
@@ -28,46 +29,55 @@ type CommunityOption = { value: number; label: string | undefined };
 
 export default function CreateEditTask() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
-  const [userId, setUserId] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchUserId = async () => {
-      const token = localStorage.getItem("token"); // Assuming you store the token in localStorage after login
-      if (!token) {
-        console.error("No token found");
-        return;
-      }
-
-      try {
-        const response = await fetch("/api/user", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          console.log(data);
-          setUserId(data.id);
-        } else {
-          console.error("Failed to fetch user ID");
-        }
-      } catch (error) {
-        console.error("Error fetching user ID:", error);
-      }
-    };
-
-    fetchUserId();
-  }, []);
+  const [userId, setUserId] = useState<number | null>(null);
 
   const [task, setTask] = useState({
     title: "",
     description: "",
     offered_task: "",
-    community_id: null as number | null,
-    posted_by: userId, // Added posted_by with a default user ID of 1
+    community_id: null as number | null
   });
+
+  useEffect(() => {
+    // Get user ID from token
+    const token = localStorage.getItem("token");
+    if (token) {
+      const decoded = jwtDecode(token) as { id: number; username: string; email: string };
+      setUserId(decoded.id);
+    }
+
+    // Set community_id from URL parameter if available
+    const communityId = searchParams.get('communityId');
+    if (communityId) {
+      setTask(prevTask => ({
+        ...prevTask,
+        community_id: parseInt(communityId)
+      }));
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    // Fetch user's joined communities
+    const fetchUserCommunities = async () => {
+      if (!userId) return;
+
+      try {
+        const response = await fetch(`http://localhost:9090/memberCommunities/${userId}`);
+        if (response.ok) {
+          const data: Community[] = await response.json();
+          setCommunities(data);
+        } else {
+          console.error("Failed to fetch user communities");
+        }
+      } catch (error) {
+        console.error("Error fetching user communities:", error);
+      }
+    };
+
+    fetchUserCommunities();
+  }, [userId]);
 
   const [errors, setErrors] = useState<FormErrors>({});
   const [communities, setCommunities] = useState<Community[]>([]);
@@ -75,6 +85,11 @@ export default function CreateEditTask() {
   const [error, setError] = useState<string | null>(null);
   const [isCreated, setIsCreated] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  const communityOptions: CommunityOption[] = communities.map(community => ({
+    value: community.community_id,
+    label: community.name
+  }));
 
   useEffect(() => {
     fetchCommunities();
@@ -112,7 +127,7 @@ export default function CreateEditTask() {
   ) => {
     setTask((prevTask) => ({
       ...prevTask,
-      community_id: selectedOption ? selectedOption.value : null,
+      community_id: selectedOption ? selectedOption.value : null
     }));
   };
 
@@ -137,6 +152,7 @@ export default function CreateEditTask() {
         const taskToSend = {
           ...task,
           community_id: task.community_id ? task.community_id.toString() : null,
+          posted_by:userId
         };
 
         const response = await fetch("http://localhost:9090/tasks", {
