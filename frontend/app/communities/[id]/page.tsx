@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Users, MapPin, Calendar, ArrowLeft, CheckCircle } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { Users, MapPin, Calendar, ArrowLeft, CheckCircle, PlusCircle } from 'lucide-react'
 import Header from '../../components/Header'
 import Footer from '../../components/Footer'
 import {jwtDecode} from 'jwt-decode'
@@ -44,6 +45,7 @@ function formatTimestamp(timestamp: [number, number]): string {
 }
 
 export default function CommunityDetail({ params }: { params: { id: string } }) {
+  const router = useRouter()
   const [community, setCommunity] = useState<Community | null>(null)
   const [members, setMembers] = useState<User[]>([])
   const [tasks, setTasks] = useState<Task[]>([])
@@ -169,6 +171,10 @@ export default function CommunityDetail({ params }: { params: { id: string } }) 
     }
   }
 
+  const handleAddTask = () => {
+    router.push(`/tasks/create?communityId=${params.id}`)
+  }
+
   if (isLoading) {
     return <div className="flex items-center justify-center min-h-screen">
       <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-green-500"></div>
@@ -193,16 +199,27 @@ export default function CommunityDetail({ params }: { params: { id: string } }) 
             <div className="p-6 sm:p-10">
               <div className="flex justify-between items-start mb-6">
                 <h1 className="text-4xl font-bold text-gray-900">{community.name}</h1>
-                <button
-                  onClick={handleMembership}
-                  className={`px-6 py-2 rounded-full text-white font-semibold transition duration-300 ${
-                    isMember
-                      ? 'bg-red-500 hover:bg-red-600'
-                      : 'bg-green-500 hover:bg-green-600'
-                  }`}
-                >
-                  {isMember ? 'Leave Community' : 'Join Community'}
-                </button>
+                <div className="flex space-x-4">
+                  <button
+                    onClick={handleMembership}
+                    className={`px-6 py-2 rounded-full text-white font-semibold transition duration-300 ${
+                      isMember
+                        ? 'bg-red-500 hover:bg-red-600'
+                        : 'bg-green-500 hover:bg-green-600'
+                    }`}
+                  >
+                    {isMember ? 'Leave Community' : 'Join Community'}
+                  </button>
+                  {isMember && (
+                    <button
+                      onClick={handleAddTask}
+                      className="px-6 py-2 rounded-full bg-white hover:bg-gray-100 text-black border-2 border-gray-300 font-semibold transition duration-300 flex items-center"
+                    >
+                      <PlusCircle className="w-5 h-5 mr-2" />
+                      Add Task
+                    </button>
+                  )}
+                </div>
               </div>
               <p className="text-xl text-gray-600 mb-8">{community.description}</p>
               <div className="flex flex-wrap gap-6 text-sm text-gray-600 mb-10">

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -26,7 +26,7 @@ type Community = {
 
 type CommunityOption = { value: number; label: string | undefined };
 
-export default function CreateEditTask() {
+export default function CreateEditTask({ communityId }: { communityId?: number }) {
   const router = useRouter();
 
   const [userId, setUserId] = useState<string | null>(null);
@@ -35,7 +35,7 @@ export default function CreateEditTask() {
     title: "",
     description: "",
     offered_task: "",
-    community_id: null as number | null
+    community_id: communityId || null as number | null
   });
 
   useEffect(() => {
