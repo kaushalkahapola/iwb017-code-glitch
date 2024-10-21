@@ -27,7 +27,7 @@ type Community = {
 
 type CommunityOption = { value: number; label: string | undefined };
 
-export default function CreateEditTask({ communityId }: { communityId?: number }) {
+export default function CreateEditTask() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -37,7 +37,7 @@ export default function CreateEditTask({ communityId }: { communityId?: number }
     title: "",
     description: "",
     offered_task: "",
-    community_id: communityId || null as number | null
+    community_id: null as number | null
   });
 
   useEffect(() => {
@@ -47,7 +47,16 @@ export default function CreateEditTask({ communityId }: { communityId?: number }
       const decoded = jwtDecode(token) as { id: number; username: string; email: string };
       setUserId(decoded.id);
     }
-  }, []);
+
+    // Set community_id from URL parameter if available
+    const communityId = searchParams.get('communityId');
+    if (communityId) {
+      setTask(prevTask => ({
+        ...prevTask,
+        community_id: parseInt(communityId)
+      }));
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     // Fetch user's joined communities
