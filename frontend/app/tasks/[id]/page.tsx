@@ -4,10 +4,12 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Users, Star, ArrowLeft } from "lucide-react";
 import { Task } from "../page";
+import { useRouter } from 'next/navigation';
 
 interface User {
   username: string;
-  rating: number;
+  email: string;
+  id: string;
 }
 
 interface Community {
@@ -32,6 +34,9 @@ export default function TaskDetails({ params }: { params: { id: string } }) {
   const [community, setCommunity] = useState<Community | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [swapRequested, setSwapRequested] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchTaskDetails = async () => {
@@ -67,8 +72,55 @@ export default function TaskDetails({ params }: { params: { id: string } }) {
       }
     };
 
+    const fetchCurrentUser = async () => {
+      try {
+        const token = localStorage.getItem('token'); // Or however you store your auth token
+        // Replace with your actual current user endpoint
+        const response = await fetch("/api/user", {
+          method: "GET",
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+        });
+        if (!response.ok) throw new Error('Failed to fetch current user');
+        const userData: User = await response.json();
+        setCurrentUser(userData);
+      } catch (err) {
+        console.error('Error fetching current user:', err);
+      }
+    };
+
     fetchTaskDetails();
+    fetchCurrentUser();
   }, [params.id]);
+
+  const handleOfferSwap = async () => {
+    if (!task || !currentUser) return;
+
+    try {
+      const response = await fetch('http://localhost:9090/swapRequests', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          task_id: task.task_id,
+          posted_by: task.posted_by,
+          requested_by: currentUser.id,
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to create swap request');
+
+      setSwapRequested(true); // Set the state to indicate the swap has been requested
+      // Optionally, you can still redirect or handle success in other ways
+      // router.push(`/users/${currentUser.id}/swaps`);
+    } catch (err) {
+      console.error('Error creating swap request:', err);
+      setError('Failed to create swap request. Please try again.');
+    }
+  };
 
   if (isLoading)
     return (
@@ -124,7 +176,7 @@ export default function TaskDetails({ params }: { params: { id: string } }) {
                   <div className="flex items-center mt-1">
                     <Star className="w-5 h-5 text-yellow-400 mr-1" />
                     <span className="text-gray-600">
-                      {user.rating.toFixed(1)}
+                      {/* {user.rating.toFixed(1)} */}
                     </span>
                   </div>
                 </div>
@@ -164,9 +216,19 @@ export default function TaskDetails({ params }: { params: { id: string } }) {
               </div>
             </div>
 
-            <button className="w-full bg-green-600 text-white py-3 px-4 rounded-md hover:bg-green-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-              Offer Task Swap
-            </button>
+            {currentUser && task && parseInt(currentUser.id) !== task.posted_by && (
+              <button
+                onClick={handleOfferSwap}
+                disabled={swapRequested}
+                className={`w-full py-3 px-4 rounded-md transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 ${
+                  swapRequested
+                    ? "bg-gray-400 text-white cursor-not-allowed"
+                    : "bg-green-600 text-white hover:bg-green-700"
+                }`}
+              >
+                {swapRequested ? "Requested" : "Offer Task Swap"}
+              </button>
+            )}
           </div>
         </div>
       </div>
