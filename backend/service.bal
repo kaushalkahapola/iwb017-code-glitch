@@ -9,6 +9,7 @@ import backend.notifications;
 import backend.task;
 import backend.swaps;
 import backend.ratings;
+import backend.swapReq;
 
 // CORS Configuration
 // The service-level CORS config applies globally to each `resource`.
@@ -368,4 +369,51 @@ service / on new http:Listener(9090) {
         }
         return ratings:getAverageRatingByTaskId(intTaskId);
     }
+
+
+    // ------- Swap Request Operations ------- //
+
+    // Get user swap requests
+    resource function get swapRequests/user/[string userId]() returns swapReq:SwapRequest[]|http:InternalServerError|error {
+        int|error intUserId = langint:fromString(userId);
+        if intUserId is error {
+            return error("Invalid user id");
+        }
+        swapReq:SwapRequest[] swaps = check swapReq:getSwapRequestsByUserId(intUserId);
+        return swaps;
+    }
+
+    // Get task swap requests
+    resource function get swapRequests/task/[string taskId]() returns swapReq:SwapRequest[]|http:InternalServerError|error {
+        int|error intTaskId = langint:fromString(taskId);
+        if intTaskId is error {
+            return error("Invalid task id");
+        }
+        swapReq:SwapRequest[] swaps = check swapReq:getSwapRequestsByTaskId(intTaskId);
+        return swaps;
+    }
+
+    // Create a new swap request
+    resource function post swapRequests(swapReq:CreateSwapRequest swap) returns sql:ExecutionResult|sql:Error {
+        return swapReq:createSwapRequest(swap);
+    }
+
+    // Update a swap request
+    resource function put swapRequests/[string requestId](swapReq:UpdateSwapRequest swap) returns sql:ExecutionResult|sql:Error {
+        int|error intRequestId = langint:fromString(requestId);
+        if intRequestId is error {
+            return error("Invalid request id");
+        }
+        return swapReq:updateSwapRequest(swap, intRequestId);
+    }
+
+    // Delete a swap request
+    resource function delete swapRequests/[string requestId]() returns sql:ExecutionResult|sql:Error {
+        int|error intRequestId = langint:fromString(requestId);
+        if intRequestId is error {
+            return error("Invalid request id");
+        }
+        return swapReq:deleteSwapRequest(intRequestId);
+    }
+
 }

@@ -1,87 +1,125 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle, XCircle, User, Star } from "lucide-react";
+import { ArrowLeft, CheckCircle, XCircle, User, MapPin, Star } from "lucide-react";
 
-// Sample data for task swap requests and ongoing/completed swaps
-const initialSwapRequests = [
-  {
-    id: 1,
-    title: "Garden Maintenance",
-    description: "Need help with weeding and planting",
-    offeredBy: "Alice Johnson",
-    status: "Open",
-    offeredTask: "Cooking lessons",
-  },
-  {
-    id: 2,
-    title: "JavaScript Tutoring",
-    description: "Offering help with React hooks",
-    offeredBy: "Bob Smith",
-    status: "Open",
-    offeredTask: "Yoga instruction",
-  },
-  {
-    id: 3,
-    title: "Dog Walking",
-    description: "Can walk your dog twice a week",
-    offeredBy: "Carol Davis",
-    status: "Open",
-    offeredTask: "Guitar lessons",
-  },
-];
+type User = {
+  user_id: number;
+  username: string;
+  email: string;
+  location: string;
+  bio: string;
+  rating: number;
+};
 
-const initialOngoingCompletedSwaps = [
-  {
-    id: 1,
-    title: "Lawn Mowing",
-    description: "Mowed lawn and trimmed hedges",
-    swappedWith: "David Brown",
-    status: "Completed",
-    rating: 5,
-  },
-  {
-    id: 2,
-    title: "Python Programming",
-    description: "Ongoing tutoring sessions",
-    swappedWith: "Eva White",
-    status: "Ongoing",
-  },
-];
+type Task = {
+  task_id: number;
+  title: string;
+  description: string;
+  posted_by: number;
+  status: string;
+  community_id?: number;
+  created_at: string;
+};
+
+type SwapRequest = {
+  request_id: number;
+  task_id: number;
+  posted_by: number;
+  requested_by: number;
+  request_status: string;
+  task?: Task | null;
+  requester?: User | null;
+};
 
 export default function TaskSwapManagement({
   params,
 }: {
   params: { id: string };
 }) {
-  const [swapRequests, setSwapRequests] = useState(initialSwapRequests);
-  const [ongoingCompletedSwaps, setOngoingCompletedSwaps] = useState(
-    initialOngoingCompletedSwaps
-  );
+  const [swapRequests, setSwapRequests] = useState<SwapRequest[]>([]);
+  const [ongoingCompletedSwaps, setOngoingCompletedSwaps] = useState<SwapRequest[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleAccept = (id: number) => {
-    const updatedRequests = swapRequests.filter((request) => request.id !== id);
-    const acceptedRequest = swapRequests.find((request) => request.id === id);
-    setSwapRequests(updatedRequests);
-    if (acceptedRequest) {
-      setOngoingCompletedSwaps([
-        ...ongoingCompletedSwaps,
-        {
-          ...acceptedRequest,
-          status: "Ongoing",
-          swappedWith: acceptedRequest.offeredBy,
-        },
-      ]);
+  useEffect(() => {
+    fetchSwapRequests();
+  }, [params.id]);
+
+  const fetchSwapRequests = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const swapResponse = await fetch(`http://localhost:9090/swapRequests/user/${params.id}`);
+      if (!swapResponse.ok) throw new Error('Failed to fetch swap requests');
+      const swapData: SwapRequest[] = await swapResponse.json();
+
+      const swapsWithDetails = await Promise.all(swapData.map(async (swap) => {
+        const [taskResponse, requesterResponse] = await Promise.all([
+          fetch(`http://localhost:9090/tasks/${swap.task_id}`),
+          fetch(`http://localhost:9090/users/${swap.requested_by}`)
+        ]);
+        
+        const task: Task | null = taskResponse.ok ? await taskResponse.json() : null;
+        const requester: User | null = requesterResponse.ok ? await requesterResponse.json() : null;
+
+        return { ...swap, task, requester };
+      }));
+
+      const pending = swapsWithDetails.filter(swap => swap.request_status === 'Pending');
+      const ongoingCompleted = swapsWithDetails.filter(swap => swap.request_status !== 'Pending');
+      
+      setSwapRequests(pending);
+      setOngoingCompletedSwaps(ongoingCompleted);
+    } catch (error) {
+      console.error('Error fetching swap requests:', error);
+      setError('Failed to load swap requests. Please try again later.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleDecline = (id: number) => {
-    const updatedRequests = swapRequests.map((request) =>
-      request.id === id ? { ...request, status: "Declined" } : request
-    );
-    setSwapRequests(updatedRequests);
+  const handleAccept = async (id: number) => {
+    try {
+      const response = await fetch(`http://localhost:9090/swapRequests/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: 'Accepted' }),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to accept swap request');
+      }
+      fetchSwapRequests();
+    } catch (error) {
+      console.error('Error accepting swap request:', error);
+      setError('Failed to accept swap request. Please try again.');
+    }
   };
+
+  const handleDecline = async (id: number) => {
+    try {
+      const response = await fetch(`http://localhost:9090/swapRequests/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: 'Rejected' }),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to decline swap request');
+      }
+      fetchSwapRequests();
+    } catch (error) {
+      console.error('Error declining swap request:', error);
+      setError('Failed to decline swap request. Please try again.');
+    }
+  };
+
+  if (isLoading) return <div className="text-center py-10">Loading...</div>;
+  if (error) return <div className="text-center py-10 text-red-500">Error: {error}</div>;
 
   return (
     <div className="h-full overflow-y-auto bg-gray-50 px-4 py-8">
@@ -93,59 +131,54 @@ export default function TaskSwapManagement({
         Back to Home
       </Link>
 
-      <h1 className="text-3xl font-bold mb-8 text-gray-800">
-        Task Swap Management
-      </h1>
+      <h1 className="text-3xl font-bold mb-8 text-gray-800">Task Swap Management</h1>
 
-      {/* Task Swap Requests */}
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4 text-gray-800">Swap Requests</h2>
         <div className="space-y-4">
           {swapRequests.map((request) => (
-            <div
-              key={request.id}
-              className="bg-white shadow-md rounded-lg overflow-hidden border border-gray-200"
-            >
+            <div key={request.request_id} className="bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200">
               <div className="p-6">
                 <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                      {request.title}
-                    </h3>
-                    <p className="text-gray-600 mb-4">{request.description}</p>
+                  <div className="flex-grow">
+                    <h3 className="text-xl font-semibold text-gray-800 mb-2">{request.task?.title}</h3>
+                    <p className="text-gray-600 mb-4">{request.task?.description}</p>
                     <div className="flex items-center text-sm text-gray-500 mb-2">
-                      <User className="w-4 h-4 mr-1" />
-                      <span>Offered by: {request.offeredBy}</span>
+                      <User className="w-4 h-4 mr-2" />
+                      <span>Requested by: {request.requester?.username}</span>
                     </div>
-                    <div className="text-sm text-gray-500">
-                      Offered Task: {request.offeredTask}
+                    <div className="flex items-center text-sm text-gray-500 mb-2">
+                      <MapPin className="w-4 h-4 mr-2" />
+                      <span>{request.requester?.location}</span>
+                    </div>
+                    <div className="flex items-center text-sm text-gray-500">
+                      <Star className="w-4 h-4 mr-2 text-yellow-400" />
+                      <span>Rating: {request.requester?.rating.toFixed(1)}</span>
                     </div>
                   </div>
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                      request.status === "Open"
-                        ? "bg-green-100 text-green-800"
-                        : request.status === "Declined"
-                        ? "bg-red-100 text-red-800"
-                        : "bg-blue-100 text-blue-800"
-                    }`}
-                  >
-                    {request.status}
+                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                    request.request_status === "Pending"
+                      ? "bg-yellow-100 text-yellow-800"
+                      : request.request_status === "Rejected"
+                      ? "bg-red-100 text-red-800"
+                      : "bg-green-100 text-green-800"
+                  }`}>
+                    {request.request_status}
                   </span>
                 </div>
               </div>
-              {request.status === "Open" && (
+              {request.request_status === "Pending" && (
                 <div className="bg-gray-50 px-6 py-4">
                   <div className="flex justify-end space-x-4">
                     <button
-                      onClick={() => handleDecline(request.id)}
+                      onClick={() => handleDecline(request.request_id)}
                       className="flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 transition-colors duration-300"
                     >
                       <XCircle className="w-5 h-5 mr-2" />
                       Decline
                     </button>
                     <button
-                      onClick={() => handleAccept(request.id)}
+                      onClick={() => handleAccept(request.request_id)}
                       className="flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 transition-colors duration-300"
                     >
                       <CheckCircle className="w-5 h-5 mr-2" />
@@ -159,48 +192,34 @@ export default function TaskSwapManagement({
         </div>
       </section>
 
-      {/* Ongoing and Completed Swaps */}
       <section>
-        <h2 className="text-2xl font-bold mb-4 text-gray-800">
-          Ongoing and Completed Swaps
-        </h2>
+        <h2 className="text-2xl font-bold mb-4 text-gray-800">Ongoing and Completed Swaps</h2>
         <div className="space-y-4">
           {ongoingCompletedSwaps.map((swap) => (
-            <div
-              key={swap.id}
-              className="bg-white shadow-md rounded-lg overflow-hidden border border-gray-200"
-            >
+            <div key={swap.request_id} className="bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200">
               <div className="p-6">
                 <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                      {swap.title}
-                    </h3>
-                    <p className="text-gray-600 mb-4">{swap.description}</p>
+                  <div className="flex-grow">
+                    <h3 className="text-xl font-semibold text-gray-800 mb-2">{swap.task?.title}</h3>
+                    <p className="text-gray-600 mb-4">{swap.task?.description}</p>
+                    <div className="flex items-center text-sm text-gray-500 mb-2">
+                      <User className="w-4 h-4 mr-2" />
+                      <span>Swapped with: {swap.requester?.username}</span>
+                    </div>
+                    <div className="flex items-center text-sm text-gray-500 mb-2">
+                      <MapPin className="w-4 h-4 mr-2" />
+                      <span>{swap.requester?.location}</span>
+                    </div>
                     <div className="flex items-center text-sm text-gray-500">
-                      <User className="w-4 h-4 mr-1" />
-                      <span>Swapped with: {swap.swappedWith}</span>
+                      <Star className="w-4 h-4 mr-2 text-yellow-400" />
+                      <span>Rating: {swap.requester?.rating.toFixed(1)}</span>
                     </div>
                   </div>
-                  <div className="flex flex-col items-end">
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-semibold mb-2 ${
-                        swap.status === "Completed"
-                          ? "bg-blue-100 text-blue-800"
-                          : "bg-yellow-100 text-yellow-800"
-                      }`}
-                    >
-                      {swap.status}
-                    </span>
-                    {swap.status === "Completed" && swap.rating && (
-                      <div className="flex items-center">
-                        <Star className="w-4 h-4 text-yellow-400 mr-1" />
-                        <span className="text-sm text-gray-600">
-                          {swap.rating}
-                        </span>
-                      </div>
-                    )}
-                  </div>
+                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                    swap.request_status === "Accepted" ? "bg-blue-100 text-blue-800" : "bg-green-100 text-green-800"
+                  }`}>
+                    {swap.request_status}
+                  </span>
                 </div>
               </div>
             </div>

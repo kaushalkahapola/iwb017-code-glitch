@@ -364,6 +364,7 @@ modules = [
 	{org = "iwb017", packageName = "backend", moduleName = "backend.db"},
 	{org = "iwb017", packageName = "backend", moduleName = "backend.notifications"},
 	{org = "iwb017", packageName = "backend", moduleName = "backend.ratings"},
+	{org = "iwb017", packageName = "backend", moduleName = "backend.swapReq"},
 	{org = "iwb017", packageName = "backend", moduleName = "backend.swaps"},
 	{org = "iwb017", packageName = "backend", moduleName = "backend.task"},
 	{org = "iwb017", packageName = "backend", moduleName = "backend.users"}
