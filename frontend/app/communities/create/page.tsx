@@ -5,28 +5,28 @@ import { useRouter } from 'next/navigation'
 import Header from '../../components/Header'
 import Footer from '../../components/Footer'
 import { MapPin, Users, Info } from 'lucide-react'
+import {jwtDecode} from 'jwt-decode';
 
 type CreateCommunityRequest = {
     name: string;
     description: string;
     location: string;
-    created_by: number; // The user ID of the creator
 }
 
 export default function CreateCommunity() {
   const router = useRouter()
-  const [formData, setFormData] = useState<CreateCommunityRequest>({
+  const [comData, setcomData] = useState<CreateCommunityRequest>({
     name: '',
     description: '',
-    location: '',
-    created_by: 1, // This should be set to the current user's ID
+    location: ''
   })
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const token = localStorage.getItem('token');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
-    setFormData(prevData => ({
+    setcomData(prevData => ({
       ...prevData,
       [name]: value
     }))
@@ -44,10 +44,21 @@ export default function CreateCommunity() {
       headers.append('Origin','http://localhost:3000');
       headers.append('Access-Control-Allow-Origin', 'http://localhost:3000');
 
+      let decoded: { id: number; username: string; email: string } | undefined; // Declare decoded as possibly undefined
+      if (token) {
+        decoded = jwtDecode(token) as { id: number; username: string; email: string }; // Assign decoded properly
+      }
+
+      // let formdata = comData.copy(); // This line is causing the error
+      let formdata = { 
+        ...comData,
+        created_by: decoded ? decoded.id : null // Use a conditional to
+      }; // Create a shallow copy of comData
+
       const response = await fetch('/api/communities', {
         method: 'POST',
         headers: headers,
-        body: JSON.stringify(formData),
+        body: JSON.stringify(formdata),
       })
 
       console.log(response)
@@ -78,7 +89,7 @@ export default function CreateCommunity() {
                   type="text"
                   id="name"
                   name="name"
-                  value={formData.name}
+                  value={comData.name}
                   onChange={handleChange}
                   required
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
@@ -92,7 +103,7 @@ export default function CreateCommunity() {
                 <textarea
                   id="description"
                   name="description"
-                  value={formData.description}
+                  value={comData.description}
                   onChange={handleChange}
                   required
                   rows={4}
@@ -108,7 +119,7 @@ export default function CreateCommunity() {
                   type="text"
                   id="location"
                   name="location"
-                  value={formData.location}
+                  value={comData.location}
                   onChange={handleChange}
                   required
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
