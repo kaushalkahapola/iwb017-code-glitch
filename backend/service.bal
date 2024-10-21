@@ -2,6 +2,13 @@
 import ballerina/http;
 import ballerina/sql;
 import ballerina/lang.'int as langint;
+import backend.users;
+import backend.community;
+import backend.community_members;
+import backend.notifications;
+import backend.task;
+import backend.swaps;
+import backend.ratings;
 
 // CORS Configuration
 // The service-level CORS config applies globally to each `resource`.
@@ -24,33 +31,33 @@ service / on new http:Listener(9090) {
     }
 
     // GET all users
-    resource function get users() returns User[]|http:InternalServerError|error {
-        User[] users = check getUsers();
+    resource function get users() returns users:User[]|http:InternalServerError|error {
+        users:User[] users = check users:getUsers();
         return users;
     }
 
     // GET a specific user by ID
-    resource function get users/[string id]() returns User|http:InternalServerError|error {
+    resource function get users/[string id]() returns users:User|http:InternalServerError|error {
         int|error intId = langint:fromString(id);
         if intId is error {
             return error("Invalid user id");
         }
-        User user = check getUserById(intId);
+        users:User user = check users:getUserById(intId);
         return user;
     }
 
     // POST create a new user
-    resource function post users(CreateUserRequest user) returns sql:ExecutionResult|sql:Error {
-        return createUser(user);
+    resource function post users(users:CreateUserRequest user) returns sql:ExecutionResult|sql:Error {
+        return users:createUser(user);
     }
 
     // PUT update a specific user by ID
-    resource function put users/[string id](UpdateUserRequest user) returns sql:ExecutionResult|sql:Error {
+    resource function put users/[string id](users:UpdateUserRequest user) returns sql:ExecutionResult|sql:Error {
         int|error intId = langint:fromString(id);
         if intId is error {
             return error("Invalid user id");
         }
-        return updateUser(user, intId);
+        return users:updateUser(user, intId);
     }
 
     // DELETE a specific user by ID
@@ -59,39 +66,39 @@ service / on new http:Listener(9090) {
         if intId is error {
             return error("Invalid user id");
         }
-        return deleteUser(intId);
+        return users:deleteUser(intId);
     }
 
     // ------- Community CRUD Operations -------- //
 
     // GET all communities
-    resource function get communities() returns Community[]|http:InternalServerError|error {
-        Community[] communities = check getCommunities();
+    resource function get communities() returns community:Community[]|http:InternalServerError|error {
+        community:Community[] communities = check community:getCommunities();
         return communities;
     }
 
     // GET a specific community by ID
-    resource function get communities/[string id]() returns Community|http:InternalServerError|error {
+    resource function get communities/[string id]() returns community:Community|http:InternalServerError|error {
         int|error intId = langint:fromString(id);
         if intId is error {
             return error("Invalid community id");
         }
-        Community community = check getCommunityById(intId);
+        community:Community community = check community:getCommunityById(intId);
         return community;
     }
 
     // POST create a new community
-    resource function post communities(CreateCommunityRequest community) returns sql:ExecutionResult|sql:Error| error {
-        return createCommunity(community);
+    resource function post communities(community:CreateCommunityRequest community) returns sql:ExecutionResult|sql:Error| error {
+        return community:createCommunity(community);
     }
 
     // PUT update a specific community by ID
-    resource function put communities/[string id](UpdateCommunityRequest community) returns sql:ExecutionResult|sql:Error {
+    resource function put communities/[string id](community:UpdateCommunityRequest community) returns sql:ExecutionResult|sql:Error {
         int|error intId = langint:fromString(id);
         if intId is error {
             return error("Invalid community id");
         }
-        return updateCommunity(community, intId);
+        return community:updateCommunity(community, intId);
     }
 
     // DELETE a specific community by ID
@@ -100,34 +107,34 @@ service / on new http:Listener(9090) {
         if intId is error {
             return error("Invalid community id");
         }
-        return deleteCommunity(intId);
+        return community:deleteCommunity(intId);
     }
 
     // ------- Community Members Operations ------- //
 
 // 1. GET all members of a specific community with user details
-    resource function get communityMembers/[string communityId]() returns User[]|http:InternalServerError|error {
+    resource function get communityMembers/[string communityId]() returns users:User[]|http:InternalServerError|error {
         int|error intCommunityId = langint:fromString(communityId);
         if intCommunityId is error {
             return error("Invalid community id");
         }
-        User[] members = check getMembersWithUserDetails(intCommunityId);
+        users:User[] members = check community_members:getMembersWithUserDetails(intCommunityId);
         return members;
     }
 
     // 2. GET all communities a given user belongs to
-    resource function get memberCommunities/[string userId]() returns Community[]|http:InternalServerError|error {
+    resource function get memberCommunities/[string userId]() returns community:Community[]|http:InternalServerError|error {
         int|error intUserId = langint:fromString(userId);
         if intUserId is error {
             return error("Invalid user id");
         }
-        Community[] communities = check getCommunitiesByUserId(intUserId);
+        community:Community[] communities = check community_members:getCommunitiesByUserId(intUserId);
         return communities;
     }
 
     // 3. POST add a member to a community
-    resource function post communityMembers(CreateCommunityMemberRequest member) returns sql:ExecutionResult|sql:Error {
-        return addMemberToCommunity(member);
+    resource function post communityMembers(community_members:CreateCommunityMemberRequest member) returns sql:ExecutionResult|sql:Error {
+        return community_members:addMemberToCommunity(member);
     }
 
     // 4. DELETE remove a member from a community
@@ -137,23 +144,23 @@ service / on new http:Listener(9090) {
         if intCommunityId is error || intUserId is error {
             return error("Invalid community id or user id");
         }
-        return removeMemberFromCommunity(intCommunityId, intUserId);
+        return community_members:removeMemberFromCommunity(intCommunityId, intUserId);
     }
 
     // ------- Notifications Operations ------- //
 
     // 1. Create a new notification
-    resource function post notifications(CreateNotificationRequest notification) returns sql:ExecutionResult|sql:Error {
-        return createNotification(notification);
+    resource function post notifications(notifications:CreateNotificationRequest notification) returns sql:ExecutionResult|sql:Error {
+        return notifications:createNotification(notification);
     }
 
     // 2. Edit the read status of a notification
-    resource function put notifications/[string id](UpdateNotificationRequest notification) returns sql:ExecutionResult|sql:Error {
+    resource function put notifications/[string id](notifications:UpdateNotificationRequest notification) returns sql:ExecutionResult|sql:Error {
         int|error intId = langint:fromString(id);
         if intId is error {
             return error("Invalid notification id");
         }
-        return updateNotificationReadStatus(intId, notification.read_status);
+        return notifications:updateNotificationReadStatus(intId, notification.read_status);
     }
 
     // 3. Delete a notification
@@ -162,22 +169,22 @@ service / on new http:Listener(9090) {
         if intId is error {
             return error("Invalid notification id");
         }
-        return deleteNotification(intId);
+        return notifications:deleteNotification(intId);
     }
 
     // 4. Get notifications of a user
-    resource function get notifications/[string userId]() returns Notification[]|http:InternalServerError|error {
+    resource function get notifications/[string userId]() returns notifications:Notification[]|http:InternalServerError|error {
         int|error intUserId = langint:fromString(userId);
         if intUserId is error {
             return error("Invalid user id");
         }
-        Notification[] notifications = check getNotificationsByUserId(intUserId);
+        notifications:Notification[] notifications = check notifications:getNotificationsByUserId(intUserId);
         return notifications;
     }
 
     // 5. Get notifications from a similar message
-    resource function get notifications/similar/[string message]() returns Notification[]|http:InternalServerError|error {
-        Notification[] notifications = check getNotificationsByMessage(message);
+    resource function get notifications/similar/[string message]() returns notifications:Notification[]|http:InternalServerError|error {
+        notifications:Notification[] notifications = check notifications:getNotificationsByMessage(message);
         return notifications;
     }
 
@@ -185,23 +192,24 @@ service / on new http:Listener(9090) {
     // ------- Task CRUD Operations -------- //
 
     // GET all tasks
-    resource function get tasks() returns Task[]|http:InternalServerError|error {
-        Task[] tasks = check getTasks();
+    resource function get tasks() returns task:Task[]|http:InternalServerError|error {
+        task:Task[] tasks = check task:getTasks();
         return tasks;
     }
 
     // POST create a new task
-    resource function post tasks(CreateTaskRequest task) returns sql:ExecutionResult|sql:Error {
-        return createTask(task);
+    resource function post tasks(task:CreateTaskRequest task) returns sql:ExecutionResult|sql:Error {
+        return task:createTask(task);
     }
 
     // GET a specific task by ID
-    resource function get tasks/[string id]() returns Task|http:InternalServerError|error {
+    resource function get tasks/[string id]() returns task:Task|http:InternalServerError|error {
         int|error intId = langint:fromString(id);
         if intId is error {
             return error("Invalid task id");
         }
-        return getTaskById(intId);
+        task:Task task = check task:getTaskById(intId);
+        return task;
     }
 
     // DELETE a specific task by ID
@@ -210,35 +218,35 @@ service / on new http:Listener(9090) {
         if intId is error {
             return error("Invalid task id");
         }
-        return deleteTask(intId);
+        return task:deleteTask(intId);
     }
 
     // PUT update a specific task by ID
-    resource function put tasks/[string id](UpdateTaskRequest task) returns sql:ExecutionResult|sql:Error {
+    resource function put tasks/[string id](task:UpdateTaskRequest task) returns sql:ExecutionResult|sql:Error {
         int|error intId = langint:fromString(id);
         if intId is error {
             return error("Invalid task id");
         }
-        return updateTask(intId, task);
+        return task:updateTask(intId, task);
     }
 
     // GET all tasks by community
-    resource function get tasks/community/[string communityId]() returns Task[]|http:InternalServerError|error {
+    resource function get tasks/community/[string communityId]() returns task:Task[]|http:InternalServerError|error {
         int|error intCommunityId = langint:fromString(communityId);
         if intCommunityId is error {
             return error("Invalid community id");
         }
-        Task[] tasks = check getTasksByCommunity(intCommunityId);
+        task:Task[] tasks = check task:getTasksByCommunity(intCommunityId);
         return tasks;
     }
 
     // GET all tasks by user
-    resource function get tasks/user/[string userId]() returns Task[]|http:InternalServerError|error {
+    resource function get tasks/user/[string userId]() returns task:Task[]|http:InternalServerError|error {
         int|error intUserId = langint:fromString(userId);
         if intUserId is error {
             return error("Invalid user id");
         }
-        Task[] tasks = check getTasksByUser(intUserId);
+        task:Task[] tasks = check task:getTasksByUser(intUserId);
         return tasks;
     }
 
@@ -246,32 +254,32 @@ service / on new http:Listener(9090) {
     // ------- Task Swap Operations ------- //
 
     // Get all task swaps
-    resource function get taskSwaps() returns TaskSwap[]|http:InternalServerError|error {
-        TaskSwap[] swaps = check getTaskSwaps();
+    resource function get taskSwaps() returns swaps:TaskSwap[]|http:InternalServerError|error {
+        swaps:TaskSwap[] swaps = check swaps:getTaskSwaps();
         return swaps;
     }
 
     // Get task swap by ID
-    resource function get taskSwaps/[string swapId]() returns TaskSwap|http:InternalServerError|error {
+    resource function get taskSwaps/[string swapId]() returns swaps:TaskSwap|http:InternalServerError|error {
         int|error intSwapId = langint:fromString(swapId);
         if intSwapId is error {
             return error("Invalid swap id");
         }
-        return getTaskSwapById(intSwapId);
+        return swaps:getTaskSwapById(intSwapId);
     }
 
     // Create a new task swap
-    resource function post taskSwaps(CreateTaskSwapRequest swap) returns sql:ExecutionResult|sql:Error {
-        return createTaskSwap(swap);
+    resource function post taskSwaps(swaps:CreateTaskSwapRequest swap) returns sql:ExecutionResult|sql:Error {
+        return swaps:createTaskSwap(swap);
     }
 
     // Update a task swap
-    resource function put taskSwaps/[string swapId](UpdateTaskSwapRequest swap) returns sql:ExecutionResult|sql:Error {
+    resource function put taskSwaps/[string swapId](swaps:UpdateTaskSwapRequest swap) returns sql:ExecutionResult|sql:Error {
         int|error intSwapId = langint:fromString(swapId);
         if intSwapId is error {
             return error("Invalid swap id");
         }
-        return updateTaskSwap(swap, intSwapId);
+        return swaps:updateTaskSwap(swap, intSwapId);
     }
 
     // Delete a task swap
@@ -280,67 +288,69 @@ service / on new http:Listener(9090) {
         if intSwapId is error {
             return error("Invalid swap id");
         }
-        return deleteTaskSwap(intSwapId);
+        return swaps:deleteTaskSwap(intSwapId);
     }
 
     // Get all task swaps for a user
-    resource function get taskSwaps/user/[string userId]() returns TaskSwap[]|http:InternalServerError|error {
+    resource function get taskSwaps/user/[string userId]() returns swaps:TaskSwap[]|http:InternalServerError|error {
         int|error intUserId = langint:fromString(userId);
         if intUserId is error {
             return error("Invalid user id");
         }
-        TaskSwap[] swaps = check getTaskSwapsByUserId(intUserId);
+        swaps:TaskSwap[] swaps = check swaps:getTaskSwapsByUserId(intUserId);
         return swaps;
     }
 
     // Get offered task swaps for a user
-    resource function get taskSwaps/user/[string userId]/offered() returns TaskSwap[]|http:InternalServerError|error {
+    resource function get taskSwaps/user/[string userId]/offered() returns swaps:TaskSwap[]|http:InternalServerError|error {
         int|error intUserId = langint:fromString(userId);
         if intUserId is error {
             return error("Invalid user id");
         }
-        TaskSwap[] swaps = check getOfferedTaskSwapsByUserId(intUserId);
+        swaps:TaskSwap[] swaps = check swaps:getOfferedTaskSwapsByUserId(intUserId);
         return swaps;
     }
 
     // Get accepted task swaps for a user
-    resource function get taskSwaps/user/[string userId]/accepted() returns TaskSwap[]|http:InternalServerError|error {
+    resource function get taskSwaps/user/[string userId]/accepted() returns swaps:TaskSwap[]|http:InternalServerError|error {
         int|error intUserId = langint:fromString(userId);
         if intUserId is error {
             return error("Invalid user id");
         }
-        TaskSwap[] swaps = check getAcceptedTaskSwapsByUserId(intUserId);
+        swaps:TaskSwap[] swaps = check swaps:getAcceptedTaskSwapsByUserId(intUserId);
         return swaps;
     }
 
     // ------- Rating Operations ------- //
 
-    resource function post ratings(CreateRatingRequest rating) returns sql:ExecutionResult|sql:Error {
-        return createRating(rating);
+    resource function post ratings(ratings:CreateRatingRequest rating) returns sql:ExecutionResult|sql:Error {
+        return ratings:createRating(rating);
     }
 
-    resource function get ratings/task/[string taskId]() returns Rating[]|http:InternalServerError|error {
+    resource function get ratings/task/[string taskId]() returns ratings:Rating[]|http:InternalServerError|error {
         int|error intTaskId = langint:fromString(taskId);
         if intTaskId is error {
             return error("Invalid task id");
         }
-        return check getRatingsByTaskId(intTaskId);
+        ratings:Rating[] ratings = check ratings:getRatingsByTaskId(intTaskId);
+        return ratings;
     }
 
-    resource function get ratings/user/[string userId]() returns Rating[]|http:InternalServerError|error {
+    resource function get ratings/user/[string userId]() returns ratings:Rating[]|http:InternalServerError|error {
         int|error intUserId = langint:fromString(userId);
         if intUserId is error {
             return error("Invalid user id");
         }
-        return check getRatingsByUserId(intUserId);
+        ratings:Rating[] ratings = check ratings:getRatingsByUserId(intUserId);
+        return ratings;
     }
 
-    resource function put ratings/update/[string ratingId](UpdateRatingRequest rating) returns sql:ExecutionResult|sql:Error {
+    resource function put ratings/update/[string ratingId](ratings:UpdateRatingRequest rating) returns sql:ExecutionResult|sql:Error {
         int|error intRatingId = langint:fromString(ratingId);
         if intRatingId is error {
             return error("Invalid rating id");
         }
-        return updateRating(intRatingId, rating);
+        return ratings:updateRating(intRatingId, rating);
     }
 
     resource function delete ratings/delete/[string ratingId]() returns sql:ExecutionResult|sql:Error {
@@ -348,7 +358,7 @@ service / on new http:Listener(9090) {
         if intRatingId is error {
             return error("Invalid rating id");
         }
-        return deleteRating(intRatingId);
+        return ratings:deleteRating(intRatingId);
     }
 
     resource function get ratings/average/[string taskId]() returns decimal|http:InternalServerError|error {
@@ -356,6 +366,6 @@ service / on new http:Listener(9090) {
         if intTaskId is error {
             return error("Invalid task id");
         }
-        return check getAverageRatingByTaskId(intTaskId);
+        return ratings:getAverageRatingByTaskId(intTaskId);
     }
 }
