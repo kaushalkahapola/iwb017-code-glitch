@@ -46,3 +46,11 @@ VALUES
 (1, 'Your task has been accepted by Charlie'),
 (2, 'You have a new task request from Diana'),
 (3, 'You have been rated 5 stars for your work on Alice’s task.');
+
+-- Insert mock swap requests
+INSERT INTO SwapRequests (task_id, posted_by, requested_by, request_status)
+VALUES
+    (1, 1, 2, 'Pending'),  -- Bob requests to swap with Alice's task (task_id 1)
+    (2, 4, 1, 'Pending'),  -- Alice requests to swap with Diana's task (task_id 2)
+    (3, 2, 3, 'Rejected'), -- Charlie requested Bob's task, but it was rejected
+    (1, 1, 3, 'Accepted'); -- Charlie requests to swap with Alice's task (task_id 1) and was accepted
