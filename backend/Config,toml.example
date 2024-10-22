@@ -1,0 +1,8 @@
+[iwb017.backend.db]
+host = "localhost"
+port = 3306
+user = "root"
+password = ""
+database = "task_swapping_app"
+connectionOptions = {}
+
