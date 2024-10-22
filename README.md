@@ -47,6 +47,9 @@ TaskSwap is an innovative task management and collaboration platform designed to
    ```
    npm install
    ```
+3. Create a configuration file:
+   - Copy the example configuration file (e.g., `.env.example`) to `.env`.
+   - Modify the `.env` file with your specific settings.
 
 3. Start the development server:
    ```
