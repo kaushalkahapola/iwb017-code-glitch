@@ -27,6 +27,13 @@ TaskSwap is an innovative task management and collaboration platform designed to
 
 3. Run the Ballerina application:
    - Follow the necessary steps to start the Ballerina application (refer to the backend documentation for specific commands).
+   ```
+   bal build
+   ```
+
+   ```
+   bal run
+   ```
 
 ### Frontend Setup
 
@@ -72,3 +79,4 @@ TaskSwap is a comprehensive task management solution that revolutionizes the way
 ### Demonstration
 
 `https://youtu.be/IrRXBeMek3c?si=tEPyPTmj3ezwKuS4`
+=======
