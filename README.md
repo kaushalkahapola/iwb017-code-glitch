@@ -1,10 +1,14 @@
 # TaskSwap
 
-[//]: # (Add your project logo or title image here)
+![logo](https://github.com/user-attachments/assets/0fbd3ff3-95df-46f4-b664-0192b66b5035)
+
 
 ## Introduction
 
 TaskSwap is an innovative task management and collaboration platform designed to streamline workflow and boost productivity. It allows users to create, assign, and swap tasks within teams, promoting flexibility and efficient resource allocation.
+
+![image](https://github.com/user-attachments/assets/3329be54-e5c0-404f-a442-0703c69c5927)
+
 
 ## Setup
 
@@ -71,7 +75,7 @@ TaskSwap is a comprehensive task management solution that revolutionizes the way
 
 ### Technology Stack
 
-- **Frontend**: Built with Nextjs, offering a responsive and intuitive user interface.
+- **Frontend**: Built with Nextjs, offering a user friendly interface.
 - **Backend**: Powered by Ballerina, providing a robust and scalable server-side solution.
 - **Database**: Utilizes MySQL for efficient data storage and retrieval.
 - **API**: RESTful API design ensures smooth communication between frontend and backend.
@@ -79,4 +83,5 @@ TaskSwap is a comprehensive task management solution that revolutionizes the way
 ### Demonstration
 
 `https://youtu.be/IrRXBeMek3c?si=tEPyPTmj3ezwKuS4`
+
 =======
